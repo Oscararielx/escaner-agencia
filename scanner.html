@@ -25,6 +25,8 @@
 
   .barra-superior { position:absolute; top:0; left:0; right:0; display:flex; align-items:center; justify-content:space-between; gap:10px; padding: max(14px, env(safe-area-inset-top)) 16px 14px; background: linear-gradient(rgba(0,0,0,.7), transparent); }
   .marca { font-size:11px; font-weight:800; letter-spacing:.4px; color: var(--accent); }
+  .contador-badge { background: var(--accent); color: var(--accent-ink); font-weight:800; font-size:13px; padding:5px 12px; border-radius:20px; white-space:nowrap; transition: transform .15s ease; }
+  .contador-badge.badge-pulso { transform: scale(1.15); }
   .estado { position:absolute; bottom:0; left:0; right:0; padding: 18px 16px max(18px, env(safe-area-inset-bottom)); background: linear-gradient(transparent, rgba(0,0,0,.75)); text-align:center; font-size:14px; font-weight:700; }
 
   .btn-cerrar { background: rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.25); color:#fff; width:36px; height:36px; border-radius:50%; font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
@@ -45,7 +47,8 @@
     <video id="video" autoplay playsinline muted></video>
     <div class="marco" id="marco"></div>
     <div class="barra-superior">
-      <span class="marca">📷 ESCÁNER — SHILE GÜERITO</span>
+      <span class="marca">📷 ESCÁNER</span>
+      <span class="contador-badge" id="contadorBadge">0 escaneados</span>
       <button class="btn-cerrar" onclick="cerrarTodo()">✕</button>
     </div>
     <div class="estado" id="estado">Iniciando cámara…</div>
@@ -64,6 +67,7 @@
   let loopId = null;
   let ultimoCodigo = null;
   let ultimoTiempo = 0;
+  let contadorEscaneados = 0;
 
   function mostrarError(msg) {
     document.getElementById('contenedor').style.display = 'none';
@@ -85,11 +89,31 @@
     }
 
     try {
-      streamCamara = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+      streamCamara = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: 'environment',
+          width: { ideal: 1920 },
+          height: { ideal: 1080 }
+        }
+      });
     } catch (e) {
-      mostrarError('No se pudo acceder a la cámara. Revisa que le hayas dado permiso a este sitio en tu navegador.');
-      return;
+      // Si el celular no soporta esa resolución, reintenta sin exigirla.
+      try {
+        streamCamara = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+      } catch (e2) {
+        mostrarError('No se pudo acceder a la cámara. Revisa que le hayas dado permiso a este sitio en tu navegador.');
+        return;
+      }
     }
+
+    // Enfoque continuo si el dispositivo lo soporta (ayuda a que el código no se vea borroso).
+    try {
+      const [track] = streamCamara.getVideoTracks();
+      const capacidades = track.getCapabilities ? track.getCapabilities() : {};
+      if (capacidades.focusMode && capacidades.focusMode.includes('continuous')) {
+        await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] });
+      }
+    } catch (e) { /* no crítico si no se puede ajustar */ }
 
     const video = document.getElementById('video');
     video.srcObject = streamCamara;
@@ -147,6 +171,12 @@
     if (texto === ultimoCodigo && (ahora - ultimoTiempo) < 1800) return;
     ultimoCodigo = texto;
     ultimoTiempo = ahora;
+
+    contadorEscaneados++;
+    const badge = document.getElementById('contadorBadge');
+    badge.innerText = `${contadorEscaneados} escaneado${contadorEscaneados === 1 ? '' : 's'}`;
+    badge.classList.add('badge-pulso');
+    setTimeout(() => badge.classList.remove('badge-pulso'), 350);
 
     if (navigator.vibrate) { try { navigator.vibrate(50); } catch(e) {} }
 
