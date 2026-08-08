@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Escáner — Agencia Shile Güerito Discada</title>
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --accent: #FFE600;
+    --accent-ink: #171a1f;
+    --navy: #2D3277;
+    --red: #ef4444;
+    --green: #00A650;
+    --text-main: #f4f6fb;
+    --text-muted: #8b95ab;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin:0; padding:0; height:100%; background:#000; color:var(--text-main); font-family: -apple-system, 'Plus Jakarta Sans', sans-serif; overflow:hidden; }
+
+  .contenedor { position:relative; width:100%; height:100vh; }
+  video { width:100%; height:100%; object-fit:cover; background:#000; }
+
+  .marco { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:78%; max-width:340px; aspect-ratio:1; border:3px solid var(--accent); border-radius:20px; box-shadow: 0 0 0 9999px rgba(0,0,0,.52); pointer-events:none; }
+
+  .barra-superior { position:absolute; top:0; left:0; right:0; display:flex; align-items:center; justify-content:space-between; gap:10px; padding: max(14px, env(safe-area-inset-top)) 16px 14px; background: linear-gradient(rgba(0,0,0,.7), transparent); }
+  .marca { font-size:11px; font-weight:800; letter-spacing:.4px; color: var(--accent); }
+  .estado { position:absolute; bottom:0; left:0; right:0; padding: 18px 16px max(18px, env(safe-area-inset-bottom)); background: linear-gradient(transparent, rgba(0,0,0,.75)); text-align:center; font-size:14px; font-weight:700; }
+
+  .btn-cerrar { background: rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.25); color:#fff; width:36px; height:36px; border-radius:50%; font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+
+  .pantalla-error { display:none; flex-direction:column; align-items:center; justify-content:center; height:100%; padding:30px; text-align:center; gap:14px; }
+  .pantalla-error.show { display:flex; }
+  .pantalla-error .glyph { font-size:40px; }
+  .pantalla-error p { color: var(--text-muted); font-size:14px; line-height:1.5; margin:0; }
+  .btn-reintentar { background: var(--accent); color: var(--accent-ink); border:none; padding:12px 22px; border-radius:10px; font-weight:800; font-size:13px; cursor:pointer; }
+
+  .flash-ok { animation: flashOk .4s ease; }
+  @keyframes flashOk { 0% { background: rgba(0,166,80,.35); } 100% { background: transparent; } }
+</style>
+</head>
+<body>
+
+  <div class="contenedor" id="contenedor">
+    <video id="video" autoplay playsinline muted></video>
+    <div class="marco" id="marco"></div>
+    <div class="barra-superior">
+      <span class="marca">📷 ESCÁNER — SHILE GÜERITO</span>
+      <button class="btn-cerrar" onclick="cerrarTodo()">✕</button>
+    </div>
+    <div class="estado" id="estado">Iniciando cámara…</div>
+  </div>
+
+  <div class="pantalla-error" id="pantallaError">
+    <div class="glyph">📷🚫</div>
+    <p id="mensajeError">No se pudo acceder a la cámara.</p>
+    <button class="btn-reintentar" onclick="location.reload()">Reintentar</button>
+  </div>
+
+<script>
+  let streamCamara = null;
+  let detectorNativo = null;
+  let lectorZXing = null;
+  let loopId = null;
+  let ultimoCodigo = null;
+  let ultimoTiempo = 0;
+
+  function mostrarError(msg) {
+    document.getElementById('contenedor').style.display = 'none';
+    document.getElementById('mensajeError').innerText = msg;
+    document.getElementById('pantallaError').classList.add('show');
+  }
+
+  function cerrarTodo() {
+    if (loopId) cancelAnimationFrame(loopId);
+    if (streamCamara) streamCamara.getTracks().forEach(t => t.stop());
+    if (lectorZXing) { try { lectorZXing.reset(); } catch(e) {} }
+    window.close();
+  }
+
+  async function iniciar() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      mostrarError('Este navegador no soporta acceso a la cámara.');
+      return;
+    }
+
+    try {
+      streamCamara = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+    } catch (e) {
+      mostrarError('No se pudo acceder a la cámara. Revisa que le hayas dado permiso a este sitio en tu navegador.');
+      return;
+    }
+
+    const video = document.getElementById('video');
+    video.srcObject = streamCamara;
+    try { await video.play(); } catch (e) {}
+    document.getElementById('estado').innerText = 'Apunta al código de barras o QR';
+
+    if ('BarcodeDetector' in window) {
+      try {
+        const formatos = await BarcodeDetector.getSupportedFormats();
+        detectorNativo = new BarcodeDetector({ formats: formatos });
+        loopDeteccionNativa(video);
+        return;
+      } catch (e) { /* cae al lector de respaldo */ }
+    }
+
+    iniciarZXing(video);
+  }
+
+  function loopDeteccionNativa(video) {
+    const tick = async () => {
+      if (!streamCamara) return;
+      try {
+        const codigos = await detectorNativo.detect(video);
+        if (codigos.length > 0) manejarCodigo(codigos[0].rawValue);
+      } catch (e) {}
+      loopId = requestAnimationFrame(tick);
+    };
+    loopId = requestAnimationFrame(tick);
+  }
+
+  function cargarScript(src) {
+    return new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = src;
+      s.onload = resolve;
+      s.onerror = reject;
+      document.head.appendChild(s);
+    });
+  }
+
+  async function iniciarZXing(video) {
+    try {
+      if (!window.ZXing) await cargarScript('https://cdnjs.cloudflare.com/ajax/libs/zxing-js/0.19.1/index.min.js');
+      lectorZXing = new ZXing.BrowserMultiFormatReader();
+      lectorZXing.decodeFromVideoElementContinuously(video, (resultado) => {
+        if (resultado) manejarCodigo(resultado.getText());
+      });
+    } catch (e) {
+      mostrarError('Tu navegador no soporta el escaneo por cámara.');
+    }
+  }
+
+  function manejarCodigo(texto) {
+    const ahora = Date.now();
+    if (texto === ultimoCodigo && (ahora - ultimoTiempo) < 1800) return;
+    ultimoCodigo = texto;
+    ultimoTiempo = ahora;
+
+    if (navigator.vibrate) { try { navigator.vibrate(50); } catch(e) {} }
+
+    const marco = document.getElementById('marco');
+    marco.classList.add('flash-ok');
+    setTimeout(() => marco.classList.remove('flash-ok'), 400);
+
+    document.getElementById('estado').innerText = '✅ Enviado — sigue escaneando…';
+    setTimeout(() => {
+      const el = document.getElementById('estado');
+      if (el) el.innerText = 'Apunta al código de barras o QR';
+    }, 1200);
+
+    if (window.opener && !window.opener.closed) {
+      window.opener.postMessage({ tipo: 'codigo_escaneado', valor: texto }, '*');
+    }
+  }
+
+  iniciar();
+</script>
+</body>
+</html>
