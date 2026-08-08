@@ -195,6 +195,21 @@
     }
   }
 
+  window.addEventListener('message', function(event) {
+    const datos = event.data;
+    if (!datos || datos.tipo !== 'resultado_escaneo') return;
+    if (!datos.exito) {
+      // La app no lo agregó (ya estaba escaneado, código no reconocido, etc.)
+      // — corregimos el contador para que refleje solo lo que sí se agregó.
+      contadorEscaneados = Math.max(0, contadorEscaneados - 1);
+      const badge = document.getElementById('contadorBadge');
+      badge.innerText = `${contadorEscaneados} escaneado${contadorEscaneados === 1 ? '' : 's'}`;
+      const el = document.getElementById('estado');
+      el.innerText = '⚠️ Ya estaba agregado — no se repitió';
+      setTimeout(() => { if (el) el.innerText = 'Apunta al código de barras o QR'; }, 1600);
+    }
+  });
+
   iniciar();
 </script>
 </body>
