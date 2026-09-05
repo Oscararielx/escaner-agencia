@@ -1,0 +1,115 @@
+<script>
+  /**
+   * ===== COMPARTIDO.html =====
+   * Funciones de JavaScript que usan las 3 pantallas (Index, Movil, Ajustes).
+   * Antes vivían copiadas y pegadas en cada archivo; ahora viven aquí una sola
+   * vez y cada página las importa con:
+   *
+   *     <?!= include('Compartido'); ?>
+   *
+   * Si necesitas cambiar cómo se ve un toast, cómo se llama al backend, etc.,
+   * este es el único lugar que hay que tocar — se refleja en las 3 pantallas.
+   *
+   * IMPORTANTE: esto se inserta ANTES del <script> propio de cada página, así
+   * que estas funciones ya existen cuando el código de la página se ejecuta.
+   */
+
+  // Contador de fallas de conexión seguidas, usado por marcarConexion() para
+  // decidir cuándo prender el punto rojo de "sin conexión" en el topbar.
+  let fallasConsecutivas = 0;
+
+  // Enciende/apaga el punto de conexión del topbar (id="connDot"). Si la
+  // página no tiene ese elemento (como Ajustes), simplemente no hace nada.
+  function marcarConexion(ok) {
+    const dot = document.getElementById('connDot');
+    if (!dot) return;
+    if (ok) {
+      fallasConsecutivas = 0;
+      dot.classList.remove('off');
+      dot.title = 'Conectado';
+    } else {
+      fallasConsecutivas++;
+      if (fallasConsecutivas >= 2) { dot.classList.add('off'); dot.title = 'Sin conexión con la hoja'; }
+    }
+  }
+
+  // Wrapper único para llamar funciones del backend (google.script.run). Todas
+  // las funciones expuestas en el backend regresan {success, data, error} —
+  // este wrapper se encarga de desempacar eso para que el resto del código
+  // nunca tenga que pensar en errores de red o del servidor por separado.
+  //
+  // onFallaRed (opcional, 5to argumento): se dispara SOLO cuando la llamada
+  // ni siquiera pudo llegar al servidor (sin internet, por ejemplo) — a
+  // diferencia de onError, que es un error de negocio real (el servidor sí
+  // respondió, pero dijo que no). Sirve para poder reintentar solo cuando
+  // se trata de un problema de conexión, no de un error de verdad.
+  function llamar(nombreFn, args, onOk, onError, onFallaRed) {
+    const fn = google.script.run
+      .withSuccessHandler(res => {
+        marcarConexion(true);
+        if (res && res.success) {
+          onOk(res.data);
+        } else if (onError) {
+          onError(res && res.error);
+        } else {
+          showToast('⚠️ ' + (res && res.error ? res.error : 'Ocurrió un error inesperado.'), 'error');
+        }
+      })
+      .withFailureHandler(err => {
+        marcarConexion(false);
+        if (onFallaRed) {
+          onFallaRed(err);
+        } else {
+          showToast('⚠️ Falla de conexión: ' + (err && err.message ? err.message : err), 'error');
+        }
+      });
+    fn[nombreFn].apply(fn, args || []);
+  }
+
+  // Notificación flotante. El botón de "deshacer" solo aparece si la página
+  // que lo llama realmente tiene una función ejecutarDeshacer() (hoy día,
+  // solo Index/Mostrador la usa).
+  function showToast(mensaje, tipo, numFilaUndo) {
+    tipo = tipo || 'error';
+    const container = document.getElementById('toastContainer');
+    if (!container) return;
+    const toast = document.createElement('div');
+    toast.className = `toast ${tipo === 'error' ? 'toast-error' : 'toast-success'}`;
+    const puedeDeshacer = numFilaUndo && typeof ejecutarDeshacer === 'function';
+    const undoBtnHTML = puedeDeshacer ? `<button class="btn-undo" onclick="ejecutarDeshacer(${numFilaUndo})">↩ DESHACER</button>` : '';
+    toast.innerHTML = `<span>${mensaje}</span>${undoBtnHTML}`;
+    container.appendChild(toast);
+    setTimeout(() => { toast.style.opacity = '0'; toast.style.transition = 'opacity .3s'; setTimeout(() => toast.remove(), 300); }, puedeDeshacer ? 8000 : 3200);
+  }
+
+  // Escapa HTML para insertar texto de usuario de forma segura en innerHTML.
+  function escapeHtml(str) {
+    if (str === undefined || str === null) return '';
+    return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+  }
+
+  // Nombre de cliente para mostrar en tarjetas — "sin nombre" en cursiva si viene vacío.
+  function nombreMostrar(nombre) {
+    const limpio = (nombre || '').trim();
+    return limpio ? escapeHtml(limpio) : '<span class="sin-nombre">sin nombre</span>';
+  }
+
+  // Vibración táctil (solo hace algo en celulares con soporte; en laptop no truena, simplemente no vibra).
+  function vibrar(ms) { if (navigator.vibrate) { try { navigator.vibrate(ms); } catch (e) {} } }
+
+  // Negro o blanco según qué tanto contraste dé sobre un color de acento — para que el texto siempre se lea.
+  function colorContraste(hex) {
+    const r = parseInt(hex.substr(1, 2), 16), g = parseInt(hex.substr(3, 2), 16), b = parseInt(hex.substr(5, 2), 16);
+    const luminancia = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    return luminancia > 0.6 ? '#171a1f' : '#ffffff';
+  }
+
+  // Mismos textos de estatus que usa el backend (ver Constantes.gs) — evita
+  // tener la palabra "ENTREGADO" tecleada a mano en cada archivo.
+  const ESTADOS = {
+    EN_TIENDA: 'EN TIENDA',
+    ENTREGADO: 'ENTREGADO',
+    DEVUELTO: 'DEVUELTO A CHOFER ML',
+    ELIMINADO: 'ELIMINADO'
+  };
+</script>

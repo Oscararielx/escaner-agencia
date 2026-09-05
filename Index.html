@@ -1,0 +1,2755 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
+
+    :root {
+      --bg: #0a0e1a;
+      --surface: #131a2b;
+      --surface-2: #1a2338;
+      --line: rgba(255,255,255,0.08);
+      --accent: #FFE600;       /* amarillo Mercado Libre */
+      --accent-ink: #171a1f;
+      --navy: #2D3277;         /* azul Mercado Libre */
+      --blue: #4d7cfe;
+      --green: #00A650;        /* verde Mercado Libre */
+      --warning: #f5a623;
+      --red: #ef4444;
+      --text-main: #f4f6fb;
+      --text-muted: #8b95ab;
+      --radius: 14px;
+      --radius-sm: 9px;
+      --font-ui: 'Plus Jakarta Sans', -apple-system, sans-serif;
+      --font-code: 'Plus Jakarta Sans', -apple-system, sans-serif; /* números tabulares, misma familia cálida */
+
+      /* Sistema de elevación — profundidad consistente en toda la app */
+      --shadow-1: 0 1px 2px rgba(15,20,35,.06), 0 1px 3px rgba(15,20,35,.08);
+      --shadow-2: 0 2px 6px rgba(15,20,35,.08), 0 6px 16px rgba(15,20,35,.08);
+      --shadow-3: 0 8px 24px rgba(15,20,35,.14), 0 2px 8px rgba(15,20,35,.10);
+      --shadow-4: 0 16px 40px rgba(15,20,35,.22), 0 4px 12px rgba(15,20,35,.12);
+    }
+
+    body.light-theme {
+      --shadow-1: 0 1px 2px rgba(30,40,70,.05), 0 1px 3px rgba(30,40,70,.06);
+      --shadow-2: 0 2px 6px rgba(30,40,70,.06), 0 6px 18px rgba(30,40,70,.08);
+      --shadow-3: 0 10px 26px rgba(30,40,70,.10), 0 2px 8px rgba(30,40,70,.06);
+      --shadow-4: 0 18px 44px rgba(30,40,70,.16), 0 4px 14px rgba(30,40,70,.08);
+    }
+
+    body.light-theme {
+      --bg: #eef1f8;
+      --surface: #ffffff;
+      --surface-2: #f4f6fb;
+      --line: #e2e6f0;
+      --accent-ink: #171a1f;
+      --text-main: #12172a;
+      --text-muted: #626c85;
+    }
+
+    * { box-sizing: border-box; font-family: var(--font-ui); font-variant-numeric: tabular-nums; }
+    html { -webkit-tap-highlight-color: transparent; }
+    body { margin: 0; padding: 0; background: var(--bg); color: var(--text-main); -webkit-font-smoothing: antialiased; transition: background .25s, color .25s; padding-bottom: 12px; }
+
+    ::selection { background: var(--accent); color: var(--accent-ink); }
+
+    /* ---------- NAV ---------- */
+    .topbar { display:flex; align-items:center; gap:8px; padding:10px 12px; background: var(--surface); border-bottom:1px solid var(--line); position: sticky; top:0; z-index:100; box-shadow: var(--shadow-2); }
+    .brand { display:flex; align-items:center; gap:8px; font-weight:900; font-size:13px; letter-spacing:.2px; color: var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:150px; padding-right:6px; }
+    @media (min-width:640px) { .brand { max-width:none; font-size:13.5px; } }
+    .brand-chip { width:10px; height:10px; border-radius:3px; background: var(--accent); box-shadow:0 0 0 3px rgba(255,230,0,.15); flex-shrink:0; }
+    .conn-dot { width:7px; height:7px; border-radius:50%; background: var(--green); flex-shrink:0; }
+    .conn-dot.off { background: var(--red); animation: blinkDot 1s infinite; }
+    @keyframes blinkDot { 50% { opacity:.3; } }
+
+    .nav { display:flex; gap:4px; overflow-x:auto; flex:1; scrollbar-width:none; }
+    .nav::-webkit-scrollbar{display:none;}
+    .nav-btn { flex:0 0 auto; padding:9px 13px; text-align:center; font-weight:800; font-size:11.5px; letter-spacing:.3px; border:none; background:transparent; color:var(--text-muted); border-radius:9px; cursor:pointer; transition: color .15s ease, background .15s ease, transform .22s cubic-bezier(.34,1.56,.64,1), box-shadow .18s ease; white-space:nowrap; -webkit-tap-highlight-color: transparent; }
+    .nav-btn:hover:not(.active) { background: var(--surface-2); color: var(--text-main); }
+    .nav-btn:active { transform: scale(.92); transition: transform .06s ease; }
+    .nav-btn.active { color:var(--accent-ink); background:var(--accent); box-shadow: 0 3px 10px rgba(255,230,0,.4), 0 1px 3px rgba(0,0,0,.1); }
+
+    .nav-btn .badge-nav { background: var(--red); color:#fff; border-radius:8px; padding:1px 6px; font-size:10px; margin-left:5px; }
+
+    .icon-btn { padding:8px 10px; background: var(--surface-2); border:1px solid var(--line); border-radius:9px; font-size:14px; cursor:pointer; color:var(--text-main); flex-shrink:0; transition: transform .22s cubic-bezier(.34,1.56,.64,1), background .15s ease, box-shadow .15s ease; -webkit-tap-highlight-color: transparent; }
+    .icon-btn:hover { background: var(--line); box-shadow: var(--shadow-1); }
+    .icon-btn:active { transform: scale(.88); transition: transform .06s ease; }
+
+    .reloj-topbar {
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      padding:7px 18px; border-radius:13px; margin-right:8px; flex-shrink:0;
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+    }
+    .reloj-fila { display:flex; align-items:center; gap:6px; }
+    .reloj-dot { width:5px; height:5px; border-radius:50%; background: var(--accent); flex-shrink:0; }
+    .reloj-hora { font-weight:800; font-family:var(--font-code); font-size:16.5px; color:var(--text-main); letter-spacing:.3px; line-height:1.15; }
+    .reloj-hora .reloj-dp { color: var(--navy); }
+    .reloj-fecha { font-size:9.5px; font-weight:700; color: var(--text-muted); letter-spacing:.3px; margin-top:1px; text-transform:uppercase; white-space:nowrap; }
+
+    .container { padding:14px; max-width: 1180px; margin:0 auto; }
+    .tab-content { display:none; }
+    .tab-content.active { display:block; animation: fadeIn .32s cubic-bezier(.22,1,.36,1); }
+    .tab-content.leaving { display:block; animation: fadeOutTab .14s ease forwards; }
+    @keyframes fadeIn { from{opacity:0; transform:translateY(8px) scale(.99);} to{opacity:1; transform:translateY(0) scale(1);} }
+    @keyframes fadeOutTab { from{opacity:1; transform:translateY(0);} to{opacity:0; transform:translateY(-6px);} }
+
+    /* ---------- HEADER / SEARCH ---------- */
+    .header-bar { display:flex; justify-content:space-between; align-items:center; background:var(--surface); border:1px solid var(--line); padding:12px 16px; border-radius:var(--radius); margin-bottom:12px; box-shadow: var(--shadow-1); }
+
+    .racha-card { display:flex; align-items:center; gap:12px; background: var(--surface); border:1px solid var(--line); padding:12px 16px; border-radius:var(--radius); margin-bottom:12px; box-shadow: var(--shadow-1); }
+    .racha-card #rachaEmoji { font-size:26px; flex-shrink:0; }
+    .racha-linea1 { font-size:12.5px; font-weight:800; color:var(--text-muted); }
+    .racha-linea2 { font-size:15px; font-weight:800; color:var(--text-main); margin-top:1px; }
+    .racha-linea2 .up { color: var(--green); }
+    .racha-linea2 .down { color: var(--text-muted); }
+    .header-title { font-size:11px; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:.8px; }
+    .header-count { font-size:20px; font-weight:900; color:var(--accent-onbg, var(--text-main)); font-family: var(--font-code); }
+    .contador-nuevos { display:flex; align-items:center; gap:11px; background: var(--surface-2); border:1px solid var(--line); border-radius:14px; padding:7px 18px 7px 14px; }
+    .contador-nuevos-icono { font-size:21px; line-height:1; }
+    .contador-nuevos-texto { display:flex; flex-direction:column; align-items:flex-start; line-height:1.2; }
+    .contador-nuevos-label { font-size:9.5px; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:.3px; white-space:nowrap; }
+    .contador-nuevos .header-count { font-size:21px; }
+    .contador-pendientes { display:inline-flex; align-items:center; gap:5px; background: rgba(239,68,68,.12); border:1px solid rgba(239,68,68,.4); color:var(--red); font-weight:800; font-size:11.5px; padding:8px 14px; border-radius:14px; white-space:nowrap; animation: latidoPendiente 2s ease-in-out infinite; }
+
+    .overlay-atencion-escaneo {
+      position:fixed; inset:0; z-index:400;
+      background: rgba(4,6,12,.4); backdrop-filter: blur(6px);
+      display:flex; align-items:center; justify-content:center;
+      pointer-events:none; /* el fondo nunca bloquea seguir escaneando */
+    }
+    .overlay-atencion-caja {
+      background:var(--surface); border:2px solid var(--red); border-radius:20px; padding:28px 34px; max-width:420px; text-align:center;
+      box-shadow: var(--shadow-4); animation: popIn .3s cubic-bezier(.175,.885,.32,1.275);
+      pointer-events:auto; /* pero la caja sí recibe el clic de "Entendido" */
+    }
+    .overlay-atencion-titulo { font-weight:900; font-size:17px; color:var(--text-main); margin:10px 0 8px; line-height:1.35; }
+    .overlay-atencion-texto { font-size:13.5px; color:var(--text-muted); line-height:1.55; }
+
+    .search-wrap { position:relative; margin-bottom:14px; }
+    .search-icono { position:absolute; left:16px; top:50%; transform:translateY(-50%); font-size:17px; opacity:.55; pointer-events:none; }
+    .search-box { width:100%; padding:15px 46px 15px 46px; font-size:17px; font-weight:700; font-family: var(--font-code); border:2px solid var(--line); border-radius:var(--radius); outline:none; background:var(--surface); color:var(--text-main); box-shadow: var(--shadow-1); transition: border-color .15s ease, box-shadow .15s ease; }
+    .search-box:focus { border-color: var(--navy); box-shadow: 0 0 0 4px rgba(77,124,254,.12); }
+    .search-clear { position:absolute; right:8px; top:50%; transform:translateY(-50%); background:var(--surface-2); border:none; width:30px; height:30px; border-radius:50%; color:var(--text-muted); cursor:pointer; font-size:14px; display:none; align-items:center; justify-content:center; transition: transform .22s cubic-bezier(.34,1.56,.64,1); -webkit-tap-highlight-color: transparent; }
+    .search-clear:active { transform: translateY(-50%) scale(.85); transition: transform .06s ease; }
+
+    /* ---------- SKELETON ---------- */
+    .skeleton { background: linear-gradient(90deg, var(--surface) 25%, var(--surface-2) 37%, var(--surface) 63%); background-size:400% 100%; animation: sk 1.4s ease infinite; border-radius: var(--radius); height:64px; margin-bottom:10px; }
+    @keyframes sk { 0%{background-position:100% 50%;} 100%{background-position:0 50%;} }
+
+    /* ---------- EMPTY STATE ---------- */
+    .empty-state { text-align:center; padding:44px 20px; color:var(--text-muted); animation: fadeIn .3s ease; }
+    .empty-state .glyph { font-size:34px; margin-bottom:10px; opacity:.85; }
+    .empty-state .title { font-weight:800; color:var(--text-main); font-size:15px; margin-bottom:4px; }
+    .empty-state .sub { font-size:13px; max-width:320px; margin:0 auto; line-height:1.5; }
+
+    /* ---------- CARDS ---------- */
+    .card-list { display:flex; flex-direction:column; gap:9px; }
+    .card-item { display:flex; align-items:center; justify-content:space-between; gap:10px; background:var(--surface); border:1px solid var(--line); padding:12px 14px; border-radius:var(--radius); box-shadow: var(--shadow-1); transition: transform .16s cubic-bezier(.22,1,.36,1), box-shadow .16s ease, border-color .12s; }
+    .card-item:hover { box-shadow: var(--shadow-2); transform: translateY(-1px); border-color: rgba(255,230,0,.35); }
+    .card-item.red-alert { border-color:rgba(239,68,68,.55); box-shadow: inset 3px 0 0 var(--red); }
+    .card-item.aging-1 { border-color: rgba(245,166,35,.28); box-shadow: inset 3px 0 0 rgba(245,166,35,.35); }
+    .card-item.aging-2 { border-color: rgba(245,166,35,.55); box-shadow: inset 3px 0 0 var(--warning); }
+    .card-item.audit-ok { border-color:rgba(0,166,80,.55); box-shadow: inset 3px 0 0 var(--green); }
+    .card-item.audit-missing { border-color:rgba(239,68,68,.55); box-shadow: inset 3px 0 0 var(--red); }
+    .card-item.new-flash { animation: flashNew 1.1s ease; }
+    @keyframes flashNew { 0%{ background: rgba(255,230,0,.18);} 100%{ background: var(--surface);} }
+
+    .item-info { display:flex; align-items:center; gap:12px; flex:1; min-width:0; }
+    .utd-tag { font-family: var(--font-code); font-size:16px; font-weight:800; color: var(--navy); background: rgba(77,124,254,.12); padding:7px 9px; border-radius:8px; white-space:nowrap; letter-spacing:.5px; box-shadow: inset 0 0 0 1px rgba(77,124,254,.15); }
+    body.light-theme .utd-tag { color:#26307a; }
+    body:not(.light-theme) .utd-tag { color:#8fb0ff; background: rgba(77,124,254,.16); }
+
+    .item-text { min-width:0; flex:1; }
+    .item-name { font-size:16px; font-weight:800; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; letter-spacing:-.2px; }
+    .item-name .sin-nombre { font-style: italic; font-weight:600; color: var(--text-muted); }
+    .item-sub { font-size:12px; font-weight:600; color:var(--text-muted); font-family: var(--font-code); margin-top:2px; }
+    .item-char { font-size:11px; font-weight:800; color:var(--accent-ink); background:var(--accent); padding:2px 8px; border-radius:6px; display:inline-block; margin-top:5px; letter-spacing:.3px; }
+
+    .ub-badge { display:inline-flex; align-items:center; gap:7px; padding:7px 12px; border-radius:20px; font-size:13px; font-weight:800; white-space:nowrap; letter-spacing:.3px; font-family: var(--font-code); }
+    .ub-badge-estante { background: rgba(255,230,0,.18); color: #8a7000; border:1px solid rgba(255,230,0,.5); }
+    body:not(.light-theme) .ub-badge-estante { color:#ffe600; }
+    .ub-badge-caja { background: rgba(0,201,167,.16); color:#00947d; border:1px solid rgba(0,201,167,.4); }
+    body:not(.light-theme) .ub-badge-caja { color:#2dd9c0; }
+    .ub-badge-otro { background:#171a1f; color:#fff; border:1px solid #171a1f; }
+
+    .dot-pulse { width:7px; height:7px; border-radius:50%; background:currentColor; position:relative; display:inline-block; }
+    .dot-pulse::after { content:''; position:absolute; top:-3px; left:-3px; width:13px; height:13px; border-radius:50%; background:currentColor; opacity:.6; animation: radarPulse 1.7s infinite ease-out; }
+    @keyframes radarPulse { 0%{transform:scale(.5); opacity:.7;} 100%{transform:scale(2.4); opacity:0;} }
+
+    .btn-action { background: linear-gradient(180deg, var(--navy) 0%, #262c68 100%); color:#fff; border:none; padding:10px 15px; border-radius:9px; font-weight:800; font-size:12.5px; cursor:pointer; white-space:nowrap; transition: filter .12s ease, transform .16s cubic-bezier(.34,1.56,.64,1), box-shadow .16s ease; letter-spacing:.2px; -webkit-tap-highlight-color: transparent; box-shadow: 0 2px 6px rgba(45,50,119,.35), 0 1px 2px rgba(0,0,0,.1); }
+    .btn-action:hover { filter: brightness(1.08); box-shadow: 0 4px 14px rgba(45,50,119,.45), 0 2px 4px rgba(0,0,0,.12); }
+    .btn-action:active { filter:brightness(1.15); transform: scale(.96); box-shadow: 0 1px 3px rgba(45,50,119,.3); }
+    .btn-move { background:var(--surface-2); color:var(--text-muted); border:1px solid var(--line); padding:10px 11px; border-radius:9px; cursor:pointer; transition: background .15s ease, transform .16s cubic-bezier(.34,1.56,.64,1), color .15s ease; }
+    .btn-move:hover { background: var(--line); color: var(--text-main); }
+    .btn-move:active { transform: scale(.92); }
+
+    /* ---------- ESTANTES (grids de auditoría / mostrador — sin cambios) ---------- */
+    .estante-status { font-size:9.5px; font-weight:800; letter-spacing:.4px; text-transform:uppercase; margin-top:2px; opacity:.85; }
+    .estante-card.sem-verde .estante-status { color: var(--green); }
+    .estante-card.sem-amarillo .estante-status { color: #f5a623; }
+    .estante-card.sem-rojo .estante-status { color: #fca5a5; }
+
+    .grid-estantes { display:grid; grid-template-columns:repeat(2,1fr); gap:9px; margin-bottom:16px; }
+    @media (min-width:600px) { .grid-estantes { grid-template-columns:repeat(3,1fr); } }
+
+    .estante-card { display:flex; justify-content:space-between; align-items:center; padding:14px 15px; border-radius:var(--radius); border:2px solid var(--line); cursor:pointer; transition: border-color .15s ease, background .15s ease, box-shadow .15s ease, transform .22s cubic-bezier(.34,1.56,.64,1); background: var(--surface); box-shadow: var(--shadow-1); -webkit-tap-highlight-color: transparent; }
+    .estante-card:hover { box-shadow: var(--shadow-2); }
+    .estante-card:active { transform: scale(.96); transition: transform .06s ease; }
+    .estante-nombre { font-size:15px; font-weight:900; color:var(--text-main); font-family: var(--font-code); }
+    .estante-count-badge { font-size:12px; font-weight:800; padding:4px 10px; border-radius:20px; font-family: var(--font-code); }
+
+    .estante-card.sem-verde { border-color: rgba(0,166,80,.35); }
+    .estante-card.sem-verde .estante-count-badge { background: rgba(0,166,80,.15); color: var(--green); }
+    .estante-card.sem-amarillo { border-color: rgba(245,166,35,.5); }
+    .estante-card.sem-amarillo .estante-count-badge { background: rgba(245,166,35,.2); color:#f5a623; }
+    .estante-card.sem-rojo { border-color: rgba(239,68,68,.55); background: rgba(239,68,68,.06); }
+    .estante-card.sem-rojo .estante-count-badge { background: rgba(239,68,68,.2); color:#fca5a5; }
+    .estante-card.tipo-estante { border-left: 4px solid rgba(255,230,0,.65); }
+    .estante-card.tipo-caja { border-left: 4px solid rgba(0,201,167,.65); }
+    .estante-card.tipo-otro { border-left: 4px solid #171a1f; }
+    .estante-card.selected { border-color: var(--accent) !important; box-shadow: 0 0 0 3px rgba(255,230,0,.18); }
+    .estante-card.selected .estante-nombre { color: var(--accent-strong, var(--text-main)); }
+
+    /* ---------- PANTALLA DIVIDIDA: ACOMODAR ---------- */
+    .acomodar-split { display:grid; grid-template-columns: 1.15fr .85fr; gap:16px; align-items:start; }
+    @media (max-width: 900px) { .acomodar-split { grid-template-columns: 1fr; } }
+    .panel-scan, .panel-tablero { min-width:0; }
+    .panel-tablero { position: sticky; top: var(--topbar-alto, 62px); }
+    @media (max-width: 900px) { .panel-tablero { position: static; } }
+
+    /* Mostrador: normal (una columna) hasta que una búsqueda deje un solo
+       paquete — ahí se abre el tablero para señalar dónde está. */
+    .mostrador-split { grid-template-columns: 1fr; transition: grid-template-columns .25s ease; }
+    .mostrador-split .panel-tablero { display: none; opacity: 0; }
+    .mostrador-split.dividido { grid-template-columns: 1.15fr .85fr; }
+    .mostrador-split.dividido .panel-tablero { display: block; opacity: 1; animation: fadeIn .3s ease; }
+
+    .panel-tablero-subtitulo { font-size:10.5px; color:var(--text-muted); font-weight:800; letter-spacing:.2px; }
+
+    .fila-estantes { display:flex; flex-wrap:wrap; justify-content:center; gap:9px; margin-bottom:10px; padding:8px; border-radius:12px; transition: background .15s ease; min-height: 20px; }
+    .fila-estantes.drag-over { background: rgba(255,230,0,.08); box-shadow: inset 0 0 0 2px rgba(255,230,0,.3); }
+
+    .tile-estante { flex:0 0 auto; min-width:98px; padding:12px 14px; border-radius:12px; border:2px solid var(--line); background:var(--surface); cursor:grab; user-select:none; transition: border-color .15s ease, box-shadow .15s ease, transform .16s cubic-bezier(.34,1.56,.64,1), opacity .15s ease; position:relative; }
+    .tile-estante:hover { transform: translateY(-2px); }
+    .tile-estante:active { cursor:grabbing; }
+    .tile-estante.dragging { opacity:.35; }
+    .tile-estante.selected { border-color: var(--accent) !important; box-shadow: 0 0 0 3px rgba(255,230,0,.4); animation: pulseSeleccionado 1.6s ease-in-out infinite; transform-origin: center; }
+    @keyframes pulseSeleccionado {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 0 3px rgba(255,230,0,.4); }
+      50% { transform: scale(1.06); box-shadow: 0 0 0 4px rgba(255,230,0,.7), 0 10px 22px rgba(255,230,0,.3); }
+    }
+
+    /* Estante iluminado en Buscar: "aquí está tu paquete" */
+    .tile-estante.resaltado-encontrado {
+      border-color: var(--accent) !important;
+      background: linear-gradient(160deg, var(--surface) 30%, rgba(255,230,0,.3) 100%);
+      animation: pulseEncontrado 1.15s ease-in-out infinite;
+      transform-origin: center;
+      z-index: 2;
+    }
+    @keyframes pulseEncontrado {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 0 4px rgba(255,230,0,.45); }
+      50% { transform: scale(1.08); box-shadow: 0 0 0 7px rgba(255,230,0,.8), 0 14px 30px rgba(255,230,0,.4); }
+    }
+    .tile-estante .tile-nombre { display:block; font-weight:900; font-family:var(--font-code); font-size:14.5px; padding-right:44px; }
+    .tile-estante .tile-conteo { position:absolute; top:10px; right:10px; min-width:28px; height:28px; padding:0 7px; border-radius:999px; display:flex; align-items:center; justify-content:center; font-weight:900; font-size:13px; font-family:var(--font-code); background: rgba(120,130,150,.15); }
+    .tile-estante.sem-verde .tile-conteo { color:var(--green); background: rgba(0,166,80,.14); }
+    .tile-estante.sem-amarillo .tile-conteo { color:#f5a623; background: rgba(245,166,35,.16); }
+    .tile-estante.sem-rojo .tile-conteo { color:#fca5a5; background: rgba(239,68,68,.16); }
+
+    .tile-medidor { position:absolute; top:9px; right:9px; width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center; background: conic-gradient(var(--anillo-color, var(--green)) calc(var(--pct, 0) * 1%), rgba(120,130,150,.25) 0); box-shadow: 0 2px 5px rgba(0,0,0,.12); transition: background .5s ease; }
+    .tile-medidor::before { content:''; position:absolute; inset:5px; border-radius:50%; background: var(--surface); box-shadow: inset 0 1px 2px rgba(0,0,0,.08); }
+    .tile-medidor span { position:relative; z-index:1; font-weight:900; font-family:var(--font-code); font-size:14px; color: var(--text-main); }
+    .tile-estante .tile-status { font-size:9px; font-weight:800; text-transform:uppercase; letter-spacing:.4px; margin-top:5px; opacity:.85; }
+    .tile-estante.sem-verde { border-color: rgba(0,166,80,.35); } .tile-estante.sem-verde .tile-status { color:var(--green); }
+    .tile-estante.sem-amarillo { border-color: rgba(245,166,35,.5); } .tile-estante.sem-amarillo .tile-status { color:#f5a623; }
+    .tile-estante.sem-rojo { border-color: rgba(239,68,68,.55); background: rgba(239,68,68,.06); } .tile-estante.sem-rojo .tile-status { color:#fca5a5; }
+
+    .drop-zone-nueva-fila { border:2px dashed var(--line); border-radius:12px; padding:16px; text-align:center; font-size:11.5px; font-weight:800; color:var(--text-muted); transition: border-color .15s ease, color .15s ease, background .15s ease; }
+    .drop-zone-nueva-fila.drag-over { border-color: var(--accent); color: var(--accent-ink); background: rgba(255,230,0,.14); }
+
+    .estante-activo-pill { display:inline-flex; align-items:center; gap:8px; font-weight:900; font-family:var(--font-code); padding:8px 18px; border-radius:26px; font-size:21px; letter-spacing:.3px; border:2px solid var(--line); background:var(--surface-2); color:var(--text-main); transition: background .2s ease, border-color .2s ease, color .2s ease; }
+    .estante-activo-pill.pill-estante { background: rgba(255,230,0,.18); border-color: rgba(255,230,0,.55); color:var(--text-main); }
+    .estante-activo-pill.pill-caja { background: rgba(0,201,167,.16); border-color: rgba(0,201,167,.5); color:var(--text-main); }
+    .estante-activo-pill.pill-otro { background:#171a1f; border-color:#171a1f; color:#fff; }
+
+    /* Paquete recién escaneado: UTD y ubicación bien grandes, fáciles de leer de un vistazo */
+    .scan-card .utd-tag { font-size:23px; padding:11px 15px; }
+    .scan-card .ub-badge { font-size:15px; padding:9px 16px; }
+    .card-item.scan-card { flex-direction: column; align-items: stretch; gap: 10px; }
+    .scan-card-header { display:flex; align-items:center; gap:10px; }
+    .numero-tarjeta { flex-shrink:0; min-width:26px; height:26px; padding:0 6px; border-radius:999px; background:var(--surface-2); border:1px solid var(--line); color:var(--text-muted); font-weight:900; font-size:11.5px; font-family:var(--font-code); display:flex; align-items:center; justify-content:center; }
+    .scan-card.pendiente .numero-tarjeta { background:rgba(239,68,68,.16); border-color:rgba(239,68,68,.4); color:var(--red); }
+    .scan-card.armada-reintento .numero-tarjeta { background:rgba(255,230,0,.2); border-color:rgba(255,230,0,.5); color:var(--accent-ink); }
+    .scan-card-header .item-sub { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--text-muted); font-size:12px; font-weight:600; font-family:var(--font-code); }
+    .scan-card-header .ub-badge { flex-shrink:0; }
+    .scan-card-acciones { display:flex; gap:6px; flex-shrink:0; }
+    .scan-card-campos { display:grid; grid-template-columns: 1fr 1fr; gap:14px; }
+    .scan-card-alerta { flex:1; font-size:11px; font-weight:800; color:var(--red); letter-spacing:.2px; }
+    @media (max-width:520px) { .scan-card-campos { grid-template-columns: 1fr; } }
+
+    /* ---------- SCAN ---------- */
+    .scan-container { display:flex; gap:8px; margin-bottom:12px; }
+    .scan-input { flex:1; padding:16px; font-size:16px; font-weight:700; font-family: var(--font-code); border:2px dashed var(--navy); border-radius:var(--radius); text-align:center; background: rgba(77,124,254,.05); color:var(--text-main); outline:none; }
+    .scan-input:focus { border-style: solid; }
+
+    .input-inline { width:100%; padding:11px; margin-top:6px; border:1px solid var(--line); border-radius:8px; font-size:13.5px; font-weight:700; background: var(--surface-2); color:var(--text-main); outline:none; text-transform:uppercase; }
+    .input-inline:focus { border-color: var(--navy); }
+    .input-required { border-color: var(--red) !important; }
+
+    /* Dentro de una tarjeta de "recién escaneado" los campos se sienten parte
+       de la tarjeta (edición inline), no como un formulario genérico encima. */
+    .scan-card .input-inline { background: transparent; border: none; border-bottom: 2px solid var(--line); border-radius: 0; padding: 5px 2px; transition: border-color .15s ease; }
+    .scan-card .input-inline:focus { border-bottom-color: var(--accent); }
+    .scan-card .input-inline::placeholder { color: var(--text-muted); font-weight: 600; opacity: .8; }
+    .scan-card .input-inline.input-required { border-bottom-color: var(--red) !important; }
+
+    .scan-card.pendiente { border-color: rgba(239,68,68,.6); border-width:2px; background: rgba(239,68,68,.05); box-shadow: 0 0 0 3px rgba(239,68,68,.12), var(--shadow-2); animation: latidoPendiente 2s ease-in-out infinite; }
+    .scan-card.armada-reintento { border-color: var(--accent) !important; background: rgba(255,230,0,.08); box-shadow: 0 0 0 4px rgba(255,230,0,.25), var(--shadow-2); animation: none; }
+    .scan-card.esperando-conexion { border-color: var(--blue); background: rgba(77,124,254,.06); animation: pulsoConexion 1.8s ease-in-out infinite; }
+    @keyframes pulsoConexion { 0%, 100% { opacity: 1; } 50% { opacity: .6; } }
+    .badge-offline { display:inline-flex; align-items:center; background: rgba(77,124,254,.14); border:1px solid rgba(77,124,254,.4); color:var(--blue); font-weight:800; font-size:10.5px; padding:4px 10px; border-radius:12px; margin-left:8px; white-space:nowrap; animation: pulsoConexion 1.8s ease-in-out infinite; }
+    .scan-card-instruccion { font-size:11.5px; font-weight:700; color:var(--text-muted); margin-top:2px; }
+    @keyframes latidoPendiente { 0%, 100% { box-shadow: 0 0 0 3px rgba(239,68,68,.12), var(--shadow-2); } 50% { box-shadow: 0 0 0 6px rgba(239,68,68,.05), var(--shadow-2); } }
+
+    /* ---------- MODO DEMO ---------- */
+    .demo-banner { background: var(--accent); color: var(--accent-ink); font-weight:800; font-size:12.5px; text-align:center; padding:9px 14px; border-radius:10px; margin-bottom:14px; box-shadow: 0 3px 10px rgba(255,230,0,.3); }
+    .demo-bloqueo { text-align:center; padding:50px 20px; background: var(--surface); border:1px solid var(--line); border-radius: var(--radius); }
+    .demo-bloqueo .glyph { font-size:44px; margin-bottom:12px; }
+    .demo-bloqueo .titulo { font-size:19px; font-weight:900; margin-bottom:8px; }
+    .demo-bloqueo p { color: var(--text-muted); font-size:14px; line-height:1.6; max-width:400px; margin:0 auto; }
+
+    /* ---------- TOASTS ---------- */
+    .toast-container { position:fixed; top:14px; left:50%; transform:translateX(-50%); z-index:999; display:flex; flex-direction:column; align-items:center; gap:8px; max-width:92vw; pointer-events:none; }
+    .toast { background:var(--surface); border:1px solid var(--line); padding:12px 16px; border-radius:12px; font-size:13.5px; font-weight:700; color:var(--text-main); box-shadow:0 12px 30px rgba(0,0,0,.35); display:flex; align-items:center; justify-content:flex-start; gap:11px; animation: slideDown .28s cubic-bezier(.175,.885,.32,1.275); pointer-events:auto; width:fit-content; max-width:440px; }
+    .toast::before { flex-shrink:0; width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:900; color:#fff; }
+    .toast.toast-error { border-color: rgba(239,68,68,.5); }
+    .toast.toast-error::before { content:'!'; background: var(--red); }
+    .toast.toast-success { border-color: rgba(0,166,80,.5); }
+    .toast.toast-success::before { content:'✓'; background: var(--green); }
+    @keyframes slideDown { from{opacity:0; transform:translateY(-14px);} to{opacity:1; transform:translateY(0);} }
+    .btn-undo { background:var(--accent); color:var(--accent-ink); border:none; padding:6px 12px; border-radius:6px; font-weight:800; font-size:11.5px; cursor:pointer; white-space:nowrap; margin-left:auto; }
+
+    /* ---------- MODALS ---------- */
+    .modal-overlay { position:fixed; inset:0; background:rgba(4,6,12,.78); backdrop-filter:blur(5px); display:none; justify-content:center; align-items:center; z-index:200; padding:14px; }
+    .modal { background:var(--surface); border:1px solid var(--line); padding:22px; border-radius:18px; width:100%; max-width:440px; color:var(--text-main); box-shadow: var(--shadow-4); }
+    .speech-bubble { border:2px solid var(--accent); border-radius:20px; padding:24px; box-shadow:0 16px 40px rgba(0,0,0,.5); animation: popIn .28s cubic-bezier(.175,.885,.32,1.275); text-align:center; }
+    @keyframes popIn { 0%{transform:scale(.86); opacity:0;} 100%{transform:scale(1); opacity:1;} }
+
+    /* ---------- STATS ---------- */
+    .stat-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:16px; }
+    .stat-card { background:var(--surface); border:1px solid var(--line); padding:17px 10px 15px; border-radius:12px; text-align:center; box-shadow: var(--shadow-1); transition: transform .16s cubic-bezier(.22,1,.36,1), box-shadow .16s ease; position:relative; overflow:hidden; }
+    .stat-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; }
+    .stat-card.stat-acento-navy::before { background: var(--navy); }
+    .stat-card.stat-acento-verde::before { background: var(--green); }
+    .stat-card.stat-acento-dorado::before { background: #c9a900; }
+    .stat-icono { font-size:19px; margin-bottom:2px; }
+    .stat-label { color:var(--text-muted); font-size:10.5px; font-weight:800; letter-spacing:.4px; }
+    .stat-value { font-size:24px; font-weight:900; margin-top:5px; font-family: var(--font-code); }
+    .stat-card:hover { box-shadow: var(--shadow-2); transform: translateY(-1px); }
+    .check-entregado { flex-shrink:0; width:26px; height:26px; border-radius:50%; background: rgba(0,166,80,.15); color:var(--green); display:flex; align-items:center; justify-content:center; font-weight:900; font-size:13px; }
+
+    .vencidos-banner { display:flex; align-items:center; gap:14px; background: linear-gradient(135deg, rgba(239,68,68,.12) 0%, rgba(239,68,68,.04) 100%); border:1px solid rgba(239,68,68,.3); border-radius:var(--radius); padding:14px 18px; margin-bottom:14px; box-shadow: var(--shadow-1); }
+    .vencidos-banner-icono { font-size:26px; flex-shrink:0; }
+    .vencidos-banner-titulo { font-weight:900; font-size:14px; color:var(--text-main); }
+    .vencidos-banner-sub { font-size:12px; color:var(--text-muted); margin-top:2px; }
+    .aviso-aproximado { background: rgba(245,166,35,.12); border:1px solid rgba(245,166,35,.4); color:#c9860f; font-weight:800; font-size:12.5px; padding:10px 16px; border-radius:12px; margin-bottom:10px; }
+    body:not(.light-theme) .aviso-aproximado { color:#f5a623; }
+
+    /* ---------- MISC ---------- */
+    kbd { background:var(--surface-2); border:1px solid var(--line); border-radius:5px; padding:1px 6px; font-family: var(--font-code); font-size:11px; }
+    .atajo-fila { display:flex; align-items:center; justify-content:space-between; gap:14px; padding:9px 0; border-bottom:1px solid var(--line); font-size:12.5px; }
+    .atajo-fila:last-child { border-bottom:none; }
+    .atajo-fila kbd { font-size:11.5px; padding:3px 8px; font-weight:800; }
+    .atajo-fila span { color:var(--text-muted); font-weight:600; text-align:right; }
+    .hint-row { font-size:11.5px; color:var(--text-muted); margin: -6px 0 12px 2px; }
+
+    /* ---------- CONTROLES DE LISTA: DENSIDAD Y ORDEN ---------- */
+    .controles-lista { display:flex; gap:8px; align-items:center; margin-bottom:12px; flex-wrap:wrap; }
+    .densidad-grupo { display:flex; background: var(--surface); border:1px solid var(--line); border-radius:9px; padding:3px; gap:2px; box-shadow: var(--shadow-1); }
+    .densidad-btn { border:none; background:transparent; color:var(--text-muted); font-size:11px; font-weight:800; padding:6px 10px; border-radius:7px; cursor:pointer; transition: background .15s ease, color .15s ease; letter-spacing:.3px; }
+    .densidad-btn:hover:not(.active) { background: var(--surface-2); color: var(--text-main); }
+    .densidad-btn.active { background: var(--accent); color: var(--accent-ink); }
+    .orden-select { flex:1; min-width:140px; background: var(--surface); border:1px solid var(--line); border-radius:9px; padding:8px 10px; color:var(--text-main); font-size:11.5px; font-weight:700; outline:none; box-shadow: var(--shadow-1); cursor:pointer; }
+
+    /* Densidad compacta: listas apretadas para ver más de un vistazo (SOLO Mostrador) */
+    body.densidad-chica #listaMostrador .card-item { padding:7px 11px; gap:6px; }
+    body.densidad-chica #listaMostrador .item-name { font-size:13px; }
+    body.densidad-chica #listaMostrador .item-sub { font-size:10.5px; margin-top:0; }
+    body.densidad-chica #listaMostrador .item-char { font-size:9.5px; padding:1px 6px; margin-top:2px; }
+    body.densidad-chica #listaMostrador .utd-tag { font-size:13px; padding:4px 7px; }
+    body.densidad-chica #listaMostrador .ub-badge { font-size:11px; padding:5px 9px; gap:5px; }
+    body.densidad-chica #listaMostrador .card-item .btn-action { padding:7px 10px; font-size:11px; }
+    body.densidad-chica #listaMostrador.card-list { gap:6px; }
+
+    /* Densidad amplia: tarjetas grandes, fáciles de tocar y leer de lejos (SOLO Mostrador) */
+    body.densidad-grande #listaMostrador .card-item { padding:18px 20px; gap:14px; }
+    body.densidad-grande #listaMostrador .item-name { font-size:19px; }
+    body.densidad-grande #listaMostrador .item-sub { font-size:14px; }
+    body.densidad-grande #listaMostrador .item-char { font-size:12px; padding:3px 10px; }
+    body.densidad-grande #listaMostrador .utd-tag { font-size:18px; padding:9px 12px; }
+    body.densidad-grande #listaMostrador .ub-badge { font-size:14px; padding:9px 15px; }
+    body.densidad-grande #listaMostrador .card-item .btn-action { padding:12px 17px; font-size:13.5px; }
+    body.densidad-grande #listaMostrador.card-list { gap:12px; }
+
+    /* ---------- TOUR DE CAPACITACIÓN ---------- */
+    .tour-overlay { position:fixed; inset:0; z-index:500; }
+    .tour-spotlight { position:fixed; border-radius:14px; box-shadow: 0 0 0 9999px rgba(4,6,12,.82); transition: top .35s cubic-bezier(.22,1,.36,1), left .35s cubic-bezier(.22,1,.36,1), width .35s ease, height .35s ease; pointer-events:none; border:2px solid var(--accent); top:-100px; left:-100px; width:10px; height:10px; }
+    .tour-tooltip { position:fixed; background: var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:18px; width:calc(100% - 32px); max-width:320px; box-shadow:0 16px 40px rgba(0,0,0,.5); z-index:501; transition: top .35s ease, left .35s ease; top:-300px; left:16px; }
+    .tour-tooltip-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+    .tour-tooltip-header span { font-size:11px; font-weight:800; color:var(--text-muted); }
+    .tour-skip { background:none; border:none; color:var(--text-muted); font-size:11px; font-weight:800; cursor:pointer; padding:2px; }
+    .tour-tooltip-titulo { font-size:16px; font-weight:900; margin-bottom:5px; color: var(--text-main); }
+    .tour-tooltip-texto { font-size:13.5px; color:var(--text-muted); line-height:1.55; }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .001ms !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <div class="topbar">
+    <div class="brand"><span class="brand-chip"></span><span id="brandTexto">MI AGENCIA MERCADO LIBRE</span> <span class="conn-dot" id="connDot" title="Conectado"></span></div>
+    <span class="badge-offline" id="badgeOffline" style="display:none;"></span>
+    <div class="nav">
+      <button class="nav-btn active" id="btnTabHome" onclick="switchTab('home', this)">🏠 MOSTRADOR</button>
+      <button class="nav-btn" id="btnTabRecepcion" onclick="switchTab('recepcion', this)">📦 ACOMODAR<span class="badge-nav" id="badgePendientesAcomodar" style="display:none;">0</span></button>
+      <button class="nav-btn" id="btnTabAuditoria" onclick="switchTab('auditoria', this)">🔍 AUDITORÍA</button>
+      <button class="nav-btn" id="btnTabBuscar" onclick="switchTab('buscar', this)">🧭 BUSCAR</button>
+      <button class="nav-btn" id="btnTabVencidos" onclick="switchTab('vencidos', this)">⏰ POR VENCER<span class="badge-nav" id="badgeVencidos" style="display:none;">0</span></button>
+      <button class="nav-btn" id="btnTabCierre" onclick="switchTab('cierre', this)">📊 CIERRE</button>
+    </div>
+    <div class="reloj-topbar">
+      <div class="reloj-fila"><span class="reloj-dot"></span><span class="reloj-hora" id="relojHora">--:--:--</span></div>
+      <span class="reloj-fecha" id="relojFecha">—</span>
+    </div>
+    <button class="icon-btn" id="btnCapacitacion" onclick="iniciarTour()" title="Modo capacitación">🎓</button>
+    <button class="icon-btn" onclick="abrirMovil()" title="Abrir versión móvil (auditoría)">📱</button>
+    <button class="icon-btn" onclick="abrirAjustes()" title="Ajustes">⚙️</button>
+    <button class="icon-btn" id="themeBtn" onclick="toggleTheme()" title="Cambiar tema">☀️</button>
+  </div>
+
+  <div class="container">
+
+    <!-- TAB 1: MOSTRADOR (se divide solo cuando encuentra un paquete único) -->
+    <div id="home" class="tab-content active">
+      <div class="acomodar-split mostrador-split" id="mostradorSplit">
+        <div class="panel-scan">
+          <div class="racha-card" id="rachaCard" style="display:none;">
+            <span id="rachaEmoji">☀️</span>
+            <div class="racha-texto">
+              <div class="racha-linea1" id="rachaSaludo">¡Buenos días!</div>
+              <div class="racha-linea2" id="rachaDato">Cargando racha del día…</div>
+            </div>
+          </div>
+          <div class="header-bar">
+            <span class="header-title">📦 Paquetes en tienda</span>
+            <span class="header-count" id="totalMetrica">—</span>
+          </div>
+
+          <div class="search-wrap">
+            <span class="search-icono">🔎</span>
+            <input type="text" id="searchInput" class="search-box" placeholder="Buscar por UTD, estante (A1, B2...) o nombre" oninput="filtrarMostrador()" autocomplete="off">
+            <button class="search-clear" id="searchClearBtn" onclick="limpiarBusqueda()">✕</button>
+          </div>
+
+          <div class="controles-lista">
+            <div class="densidad-grupo" id="densidadGrupo">
+              <button class="densidad-btn active" data-densidad="auto" onclick="elegirDensidad('auto')" title="Automático según cantidad">AUTO</button>
+              <button class="densidad-btn" data-densidad="chica" onclick="elegirDensidad('chica')" title="Compacto">S</button>
+              <button class="densidad-btn" data-densidad="mediana" onclick="elegirDensidad('mediana')" title="Mediano">M</button>
+              <button class="densidad-btn" data-densidad="grande" onclick="elegirDensidad('grande')" title="Amplio">L</button>
+            </div>
+            <select class="orden-select" id="ordenSelect" onchange="cambiarOrden(this.value)">
+              <option value="nombre-az">Nombre A-Z</option>
+              <option value="nombre-za">Nombre Z-A</option>
+              <option value="tiempo-desc">Más tiempo en tienda</option>
+              <option value="tiempo-asc">Recién llegado</option>
+              <option value="utd">UTD</option>
+            </select>
+          </div>
+
+          <div id="btnEntregarTodosCont"></div>
+          <div id="listaMostrador" class="card-list"></div>
+        </div>
+
+        <div class="panel-tablero">
+          <div class="header-bar" style="margin-bottom:10px;">
+            <span class="header-title">📍 Dónde está</span>
+          </div>
+          <div id="tableroEstantesMostrador"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: ACOMODAR (pantalla dividida — pistola USB) -->
+    <div id="recepcion" class="tab-content">
+      <div class="demo-banner" id="demoBanner" style="display:none;">🔒 Modo demo: <span id="demoBannerTexto">0/10 paquetes usados</span></div>
+
+      <div class="demo-bloqueo" id="demoBloqueo" style="display:none;">
+        <div class="glyph">🔒</div>
+        <div class="titulo">Llegaste al límite de la demo</div>
+        <p id="demoBloqueoTexto">Esta versión de prueba permite hasta 10 paquetes.</p>
+      </div>
+
+      <div id="recepcionContenido" class="acomodar-split">
+        <div class="panel-scan">
+          <div class="header-bar" style="margin-bottom:10px;">
+            <span class="header-title">🎯 Escaneando en <span class="estante-activo-pill" id="estanteActivoTexto">—</span></span>
+            <div style="display:flex; align-items:center; gap:10px;">
+              <span class="contador-pendientes" id="contadorPendientes" style="display:none;">⚠️ <span id="totalPendientesCount">0</span> pendiente(s) por nombre</span>
+              <span class="contador-nuevos"><span class="contador-nuevos-icono">📦</span><span class="contador-nuevos-texto"><span class="contador-nuevos-label">Nuevos paquetes</span><span class="header-count" id="totalSesionCount">0</span></span></span>
+            </div>
+          </div>
+          <div class="scan-container">
+            <input type="text" id="scanInput" class="scan-input" placeholder="Escanea el código de barras o QR" autocomplete="off">
+          </div>
+          <div id="listaSesionScan" class="card-list"></div>
+          <div style="display:flex; justify-content:center; margin-top:14px;">
+            <button class="btn-move" id="btnEliminarTodoSesion" style="display:none; color:#fff; background:rgba(239,68,68,.85); border-color:transparent; font-size:11px; font-weight:800; border-radius:20px; padding:9px 16px; box-shadow:0 3px 10px rgba(239,68,68,.3);" onclick="eliminarTodoSesion()">🧹 ELIMINAR TODO LO DE ESTA LISTA</button>
+          </div>
+        </div>
+
+        <div class="panel-tablero">
+          <div class="header-bar" style="margin-bottom:12px;">
+            <span class="header-title">📍 Tablero de estantes</span>
+            <span class="panel-tablero-subtitulo">⇕ arrástralos para acomodarlos</span>
+          </div>
+          <div id="tableroEstantes"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: AUDITORÍA VISUAL (pantalla dividida, igual que Acomodar) -->
+    <div id="auditoria" class="tab-content">
+      <div class="acomodar-split">
+        <div class="panel-scan">
+          <div class="header-bar" style="margin-bottom:10px;">
+            <span class="header-title">🔎 Auditando <span class="estante-activo-pill" id="estanteAuditActivoTexto">—</span></span>
+            <span class="header-count" id="auditProgresoHeader">0/0</span>
+          </div>
+          <div class="scan-container">
+            <input type="text" id="auditInput" class="scan-input" placeholder="Escanea para confirmar" autocomplete="off">
+          </div>
+          <div class="card-list" id="listaAuditoriaInteractiva"></div>
+        </div>
+
+        <div class="panel-tablero">
+          <div class="header-bar" style="margin-bottom:10px;">
+            <span class="header-title">📍 Estante a auditar</span>
+          </div>
+          <div id="tableroEstantesAuditoria"></div>
+          <button class="btn-action" id="btnSincronizarAuditoria" style="width:100%; background:var(--navy); padding:16px; margin-top:16px; font-size:14px; font-weight:900;" onclick="evaluarYConfirmarAuditoria()">🔄 SINCRONIZAR ESTANTE</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB BUSCAR: encuentra cualquier paquete por UTD o guía -->
+    <div id="buscar" class="tab-content">
+      <div class="acomodar-split">
+        <div class="panel-scan">
+          <div class="header-bar" style="margin-bottom:12px;"><span class="header-title">🧭 Buscar un paquete</span></div>
+          <div class="search-wrap">
+            <span class="search-icono">🧭</span>
+            <input type="text" id="buscarInput" class="search-box" placeholder="Escanea o escribe el UTD o la guía" autocomplete="off" oninput="alEscribirBuscar(this.value)">
+          </div>
+          <div id="resultadosBuscar" class="card-list"></div>
+        </div>
+
+        <div class="panel-tablero">
+          <div class="header-bar" style="margin-bottom:10px;">
+            <span class="header-title">📍 Dónde está</span>
+          </div>
+          <div id="tableroEstantesBuscar"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: POR VENCER -->
+
+    <div id="vencidos" class="tab-content">
+      <div class="vencidos-banner" id="vencidosBanner" style="display:none;">
+        <span class="vencidos-banner-icono">⏰</span>
+        <div>
+          <div class="vencidos-banner-titulo" id="vencidosBannerTitulo">—</div>
+          <div class="vencidos-banner-sub">Ya no cuentan como "en tienda" — confírmalos aquí en cuanto el chofer se los lleve.</div>
+        </div>
+      </div>
+      <div class="header-bar" style="margin-bottom:12px;">
+        <span class="header-title">⏰ Paquetes con 5+ días hábiles en tienda</span>
+        <span class="header-count" id="totalVencidosHeader">0</span>
+      </div>
+      <div id="btnDevolverTodosCont" style="margin-bottom:12px;"></div>
+      <div id="listaVencidosCont" class="card-list"></div>
+    </div>
+
+    <!-- TAB 5: CIERRE DE TURNO -->
+    <div id="cierre" class="tab-content">
+      <div class="header-bar" style="margin-bottom:12px;"><span class="header-title">📊 Resumen de hoy</span></div>
+
+      <div class="stat-grid">
+        <div class="stat-card stat-acento-navy"><div class="stat-icono">📥</div><div class="stat-label">RECIBIDOS</div><div class="stat-value" style="color:var(--navy);" id="cierreRecibidos">0</div></div>
+        <div class="stat-card stat-acento-verde"><div class="stat-icono">✅</div><div class="stat-label">ENTREGADOS</div><div class="stat-value" style="color:var(--green);" id="cierreEntregados">0</div></div>
+        <div class="stat-card stat-acento-dorado"><div class="stat-icono">📦</div><div class="stat-label">EN TIENDA</div><div class="stat-value" style="color:#c9a900;" id="cierreEnTienda">0</div></div>
+      </div>
+
+      <div class="header-bar" style="margin-bottom:10px;"><span class="header-title">🕒 Últimos entregados hoy</span></div>
+      <div id="listaUltimosEntregados" class="card-list"></div>
+
+      <button class="btn-action" id="btnCopiarResumenCierre" style="width:100%; background:var(--surface-2); color:var(--text-main); border:1px solid var(--line); padding:14px; margin-top:16px;" onclick="descargarResumenCierre()">📄 COPIAR RESUMEN DE CIERRE</button>
+    </div>
+
+  </div>
+
+  <!-- TOUR DE CAPACITACIÓN -->
+  <div class="tour-overlay" id="tourOverlay" style="display:none;">
+    <div class="tour-spotlight" id="tourSpotlight"></div>
+    <div class="tour-tooltip" id="tourTooltip">
+      <div class="tour-tooltip-header">
+        <span id="tourPaso">1/12</span>
+        <button class="tour-skip" onclick="terminarTour()">Saltar ✕</button>
+      </div>
+      <div class="tour-tooltip-titulo" id="tourTitulo"></div>
+      <div class="tour-tooltip-texto" id="tourTexto"></div>
+      <button class="btn-action" id="tourBtnSiguiente" style="width:100%; margin-top:12px;" onclick="siguientePasoTour()">Siguiente →</button>
+    </div>
+  </div>
+
+  <!-- MODAL: EDITAR PAQUETE -->
+  <div class="modal-overlay" id="modalEditar">
+    <div class="modal">
+      <h3 style="margin-top:0; font-size:17px;">✏️ Editar paquete <span style="font-family:var(--font-code); color:var(--navy);" id="editUtdHeader"></span></h3>
+
+      <label style="font-size:11px; font-weight:800; color:var(--text-muted);">NOMBRE DEL CLIENTE</label>
+      <input type="text" id="editNombre" class="input-inline" placeholder="NOMBRE DEL CLIENTE">
+
+      <label style="font-size:11px; font-weight:800; color:var(--text-muted); margin-top:12px; display:block;">CARACTERÍSTICAS / EMBALAJE</label>
+      <input type="text" id="editCaracteristicas" class="input-inline" placeholder="EJ. CAJA, BOLSA ML">
+
+      <label style="font-size:11px; font-weight:800; color:var(--text-muted); margin-top:12px; display:block;">UBICACIÓN / ESTANTE</label>
+      <div class="grid-estantes" id="gridReubicar" style="margin-top:8px;"></div>
+
+      <button class="btn-action" style="width:100%; margin-top:16px; padding:14px; background:var(--green);" onclick="guardarEdicionCompleta()">GUARDAR CAMBIOS</button>
+      <button class="btn-action" style="width:100%; background:var(--surface-2); color:var(--text-main); border:1px solid var(--line); margin-top:8px;" onclick="cerrarModal('modalEditar')">CANCELAR</button>
+    </div>
+  </div>
+
+  <!-- MODAL: CONFIRMACIÓN DE ACCIÓN EN LOTE (más de 5 paquetes) -->
+  <div class="modal-overlay" id="modalConfirmLote">
+    <div class="modal">
+      <h3 style="margin-top:0; font-size:17px;" id="modalConfirmLoteTitulo">¿Confirmar acción en lote?</h3>
+      <div id="modalConfirmLoteResumen" style="font-size:13px; color:var(--text-main); line-height:1.7; max-height:220px; overflow-y:auto; background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:12px 14px; margin-bottom:14px;"></div>
+      <div style="display:flex; gap:10px;">
+        <button class="btn-action" id="btnConfirmarAccionLote" style="flex:1; padding:12px;" onclick="confirmarAccionLote()">CONFIRMAR</button>
+        <button class="btn-action" style="flex:1; background:var(--surface-2); color:var(--text-main); border:1px solid var(--line);" onclick="accionLotePendiente=null; cerrarModal('modalConfirmLote')">CANCELAR</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: CONFIRMACIÓN DE AUDITORÍA -->
+  <div class="modal-overlay" id="modalAuditoriaConfirm">
+    <div class="modal">
+      <h3 style="margin-top:0; color:var(--warning); font-size:17px;">Confirmar sincronización</h3>
+      <div id="msgAuditoriaEvaluacion" style="font-size:13px; color:var(--text-muted); margin-bottom:12px;"></div>
+      <div id="listaFaltantesAudit" style="background:rgba(239,68,68,.1); border:1px solid rgba(239,68,68,.3); padding:10px; border-radius:8px; font-size:12px; color:#fca5a5; margin:10px 0; max-height:150px; overflow-y:auto; font-family: var(--font-code);"></div>
+      <p style="color:var(--text-main); font-size:13px; font-weight:700;">¿Marcar los faltantes como ENTREGADOS?</p>
+      <div style="display:flex; gap:10px; margin-top:14px;">
+        <button class="btn-action" style="flex:1; padding:12px;" onclick="confirmarSalidaAuditoria()">SÍ, MARCAR</button>
+        <button class="btn-action" style="flex:1; background:var(--surface-2); color:var(--text-main); border:1px solid var(--line);" onclick="cerrarModal('modalAuditoriaConfirm')">CANCELAR</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: CONFIRMACIÓN GENÉRICA (reemplaza los confirm() feos del navegador) -->
+  <div class="modal-overlay" id="modalConfirmarGenerico">
+    <div class="modal speech-bubble">
+      <div style="font-size:32px; margin-bottom:6px;" id="confirmGenericoIcono">🗑️</div>
+      <h3 style="margin-top:0; color:var(--text-main); font-size:19px; font-weight:900;" id="confirmGenericoTitulo">¿Confirmar?</h3>
+      <p style="font-size:14px; margin:12px 0 0; color:var(--text-muted); line-height:1.5;" id="confirmGenericoTexto"></p>
+      <div style="display:flex; gap:10px; margin-top:20px;">
+        <button class="btn-action" style="flex:1; padding:14px; font-size:13.5px; background:var(--red);" id="confirmGenericoBtnAceptar" onclick="ejecutarConfirmGenerico()">SÍ, ELIMINAR</button>
+        <button class="btn-action" style="flex:1; background:var(--surface-2); color:var(--text-main); border:1px solid var(--line); font-size:13.5px;" onclick="confirmGenericoCallback=null; cerrarModal('modalConfirmarGenerico')">CANCELAR</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: REUBICAR DESDE LA LISTA DE RECIÉN ESCANEADO -->
+  <div class="modal-overlay" id="modalReubicarSesion">
+    <div class="modal">
+      <h3 style="margin-top:0; font-size:17px;">Reubicar paquete <span style="font-family:var(--font-code); color:var(--navy);" id="reubicarSesionUtdHeader"></span></h3>
+      <p style="font-size:12.5px; color:var(--text-muted); margin-top:-6px;">Elige el estante correcto — se mueve al instante.</p>
+      <div class="grid-estantes" id="gridReubicarSesion" style="margin-top:8px;"></div>
+      <button class="btn-action" style="width:100%; background:var(--surface-2); color:var(--text-main); border:1px solid var(--line); margin-top:8px;" onclick="itemReubicandoSesion=null; cerrarModal('modalReubicarSesion')">CANCELAR</button>
+    </div>
+  </div>
+
+  <!-- AVISO DE ATENCIÓN: se queda hasta que confirmes con Enter o clic — no bloquea seguir escaneando -->
+  <div class="overlay-atencion-escaneo" id="overlayAtencionEscaneo" style="display:none;">
+    <div class="overlay-atencion-caja">
+      <div style="font-size:38px;">⚠️</div>
+      <div class="overlay-atencion-titulo">El paquete #<span id="overlayAtencionNumero">1</span> escaneado requiere tu atención</div>
+      <div class="overlay-atencion-texto" id="overlayAtencionTexto"></div>
+      <button class="btn-action" style="margin-top:16px; padding:12px 24px; font-size:12.5px;" onclick="cerrarOverlayAtencion()">✅ ENTENDIDO, SIGO ESCANEANDO</button>
+    </div>
+  </div>
+
+  <!-- MENÚ DE ATAJOS: aparece al mantener presionado Ctrl -->
+  <div class="modal-overlay" id="modalAtajos" style="align-items:flex-start; padding-top:90px; background:rgba(4,6,12,.5); backdrop-filter:blur(2px);">
+    <div class="modal" style="max-width:380px;">
+      <h3 style="margin-top:0; font-size:16px;">⌨️ Atajos de teclado</h3>
+      <div class="atajo-fila"><kbd>Ctrl</kbd> + <kbd>K</kbd><span>Ir a Buscar</span></div>
+      <div class="atajo-fila"><kbd>Ctrl</kbd> + <kbd>←</kbd> <kbd>→</kbd><span>Cambiar de pestaña</span></div>
+      <div class="atajo-fila"><kbd>Ctrl</kbd> + <kbd>Z</kbd><span>Deshacer último escaneo (Acomodar)</span></div>
+      <div class="atajo-fila"><kbd>⬅️➡️⬆️⬇️</kbd><span>Cambiar de estante (Acomodar/Auditoría)</span></div>
+      <div class="atajo-fila"><kbd>Esc</kbd><span>Cerrar ventanas / limpiar búsqueda</span></div>
+    </div>
+  </div>
+
+  <!-- MODAL: CRONÓMETRO Y CONFIRMACIÓN DE ENTREGA -->
+  <div class="modal-overlay" id="modalPreguntaEntrega">
+    <div class="modal speech-bubble">
+      <div style="font-size:32px; margin-bottom:6px;">📦</div>
+      <h3 style="margin-top:0; color:var(--text-main); font-size:20px; font-weight:900;">¿Ya entregaste este paquete?</h3>
+      <p style="font-size:15px; margin:14px 0; color:var(--text-main); line-height:1.4;">
+        UTD: <b style="color:var(--navy); font-size:22px; font-family:var(--font-code);" id="pregUtdHeader"></b><br>
+        Cliente: <b id="pregNombreHeader" style="font-size:17px;"></b>
+      </p>
+      <div class="ub-badge" id="pregUbicacionBadge" style="margin:0 auto 6px; width:fit-content;"><span class="dot-pulse"></span><span id="pregUbicacionTexto">—</span></div>
+      <div style="display:flex; gap:10px; margin-top:20px;">
+        <button class="btn-action" style="flex:1; padding:16px; font-size:14px; background:var(--green);" onclick="confirmarEntregaDesdeModal()">SÍ, ENTREGADO ✅</button>
+        <button class="btn-action" style="flex:1; background:var(--surface-2); color:var(--text-main); border:1px solid var(--line); font-size:13px;" onclick="cerrarModal('modalPreguntaEntrega')">AÚN NO</button>
+      </div>
+    </div>
+  </div>
+
+  <?!= include('Compartido'); ?>
+  <script>
+    let estantes = [];
+    let digitosUTD = 3;
+    // Tus guías de Mercado Libre siempre traen 11 dígitos — si la pistola se
+    // come alguno al leer, esto lo detecta antes de guardar algo corrupto.
+    const LARGO_GUIA_ESPERADO = 11;
+
+    // Numera cada paquete que pasa por Acomodar en esta sesión (se guarde o
+    // no), para poder decirte "el paquete número X requiere tu atención".
+    let contadorPaquetesSesion = 0;
+
+    // Si se cae el internet a media escaneada, esto guarda el intento en tu
+    // misma laptop (no se pierde ni al recargar la página) y lo reintenta
+    // solo en cuanto vuelva la conexión — sin que tengas que hacer nada.
+    let colaOffline = [];
+    try { colaOffline = JSON.parse(localStorage.getItem('cola_offline_escaneos') || '[]'); } catch (e) { colaOffline = []; }
+
+    function guardarColaOffline() {
+      localStorage.setItem('cola_offline_escaneos', JSON.stringify(colaOffline));
+      const badge = document.getElementById('badgeOffline');
+      if (badge) {
+        badge.style.display = colaOffline.length > 0 ? 'inline-flex' : 'none';
+        badge.innerText = `🔌 ${colaOffline.length} esperando conexión`;
+      }
+    }
+
+    function reintentarColaOffline() {
+      if (colaOffline.length === 0 || !navigator.onLine) return;
+      const pendientesAhora = [...colaOffline];
+      pendientesAhora.forEach(entrada => {
+        llamar('registrarPaqueteInstantaneo', [entrada.ubicacion, entrada.paquete], data => {
+          colaOffline = colaOffline.filter(e => e.tempId !== entrada.tempId);
+          guardarColaOffline();
+
+          const item = historialSesion.find(h => h.tempId === entrada.tempId);
+          if (item) {
+            item.esperandoConexion = false;
+            if (data.guardado) {
+              item.utd = data.utd; item.guia = data.guia; item.numFila = data.numFila; item.agregadoEn = Date.now();
+              conteoEstantes[entrada.ubicacion] = (conteoEstantes[entrada.ubicacion] || 0) + 1;
+              actualizarContadorSesion();
+              renderTablero();
+            } else if (data.requiereNombre) {
+              item.requiereNombre = true;
+              actualizarContadorSesion();
+            } else if (data.duplicadoExacto) {
+              item.eliminado = true;
+            }
+            renderHistorialSesion();
+          }
+          showToast(`✅ Se recuperó la conexión — paquete ${entrada.paquete.utd} ya se guardó`, 'success');
+        }, (error) => {
+          // Error de negocio real (no de conexión): se saca de la cola y se avisa.
+          colaOffline = colaOffline.filter(e => e.tempId !== entrada.tempId);
+          guardarColaOffline();
+          const item = historialSesion.find(h => h.tempId === entrada.tempId);
+          if (item) { item.esperandoConexion = false; item.eliminado = true; renderHistorialSesion(); }
+          showToast('⚠️ ' + error, 'error');
+        }, () => {
+          // Sigue sin internet — se queda en la cola tal cual, se reintenta después.
+        });
+      });
+    }
+
+    // Cuando un código llega incompleto, la tarjeta se queda pendiente en la
+    // lista (en rojo) en vez de bloquear el flujo. Si tocas esa tarjeta,
+    // queda "armada" para recibir el siguiente escaneo — así no se crea un
+    // paquete nuevo por accidente, se completa justo ese pendiente.
+    let tempIdEnReintento = null;
+
+    let layoutEstantes = [];
+    let capacidadesEstantes = {}; // { "A1": 15, "CAJA 1": 5, ... } — el que no está aquí usa el valor por defecto
+    const CAPACIDAD_ESTANTE_DEFECTO = 10;
+    let paquetesBase = [];
+    let conteoEstantes = {};
+    let resumenDia = { recibidosHoy: 0, entregadosHoy: 0, devueltosHoy: 0, ultimosEntregados: [] };
+
+    let estanteSeleccionado = "";
+    let estanteAuditoria = "";
+    let historialSesion = [];
+    let itemReubicandoSesion = null;
+    let confirmGenericoCallback = null;
+    const SESION_EXPIRA_MS = 30 * 60 * 1000; // 30 minutos
+
+    function mostrarConfirmacion(opts) {
+      document.getElementById('confirmGenericoIcono').innerText = opts.icono || '🗑️';
+      document.getElementById('confirmGenericoTitulo').innerText = opts.titulo || '¿Confirmar?';
+      document.getElementById('confirmGenericoTexto').innerText = opts.texto || '';
+      const btn = document.getElementById('confirmGenericoBtnAceptar');
+      btn.innerText = opts.textoBoton || 'SÍ, ELIMINAR';
+      btn.style.background = opts.colorBoton || 'var(--red)';
+      confirmGenericoCallback = opts.onConfirm;
+      document.getElementById('modalConfirmarGenerico').style.display = 'flex';
+    }
+
+    function ejecutarConfirmGenerico() {
+      const cb = confirmGenericoCallback;
+      confirmGenericoCallback = null;
+      cerrarModal('modalConfirmarGenerico');
+      if (cb) cb();
+    }
+
+    let escaneadosAuditSet = new Set();
+    let filasFaltantesAuditoria = [];
+
+    let paqueteEditando = null;
+    let estanteEdicionSeleccionado = "";
+
+    let timerEntregaAuto = null;
+    let paquetePendientePregunta = null;
+    let utdRechazadoTemporalmente = null;
+    let rechazoHasta = 0;
+
+    let densidadPreferida = localStorage.getItem('densidad_preferida') || 'auto';
+    let ordenPreferido = localStorage.getItem('orden_preferido') || 'nombre-az';
+
+    let nombreMarcaActual = 'Mi Agencia Mercado Libre';
+
+    function aplicarPersonalizacion() {
+      llamar('obtenerConfigMarca', [], data => {
+        nombreMarcaActual = data.nombre;
+        const brand = document.getElementById('brandTexto');
+        if (brand) brand.innerText = data.nombre.toUpperCase();
+        const raiz = document.documentElement.style;
+        raiz.setProperty('--accent', data.colorAcento);
+        raiz.setProperty('--accent-ink', colorContraste(data.colorAcento));
+        raiz.setProperty('--navy', data.colorNavy);
+      });
+    }
+
+    // ---------- MODO DEMO ----------
+    let demoInfo = { activo: false, limite: 10, registrados: 0, contacto: '' };
+
+    function actualizarEstadoDemo() {
+      llamar('obtenerConfigDemo', [], data => {
+        demoInfo = data;
+        const banner = document.getElementById('demoBanner');
+        const bloqueo = document.getElementById('demoBloqueo');
+        const contenido = document.getElementById('recepcionContenido');
+
+        if (!data.activo) {
+          banner.style.display = 'none';
+          bloqueo.style.display = 'none';
+          contenido.style.display = 'grid';
+          return;
+        }
+
+        const bloqueado = data.registrados >= data.limite;
+        banner.style.display = bloqueado ? 'none' : 'block';
+        document.getElementById('demoBannerTexto').innerText = `${data.registrados}/${data.limite} paquetes usados`;
+
+        bloqueo.style.display = bloqueado ? 'block' : 'none';
+        contenido.style.display = bloqueado ? 'none' : 'grid';
+        if (bloqueado) {
+          document.getElementById('demoBloqueoTexto').innerText =
+            `Esta versión de prueba permite hasta ${data.limite} paquetes.` +
+            (data.contacto ? ` ${data.contacto}` : ' Contacta al desarrollador para tu app completa sin límite.');
+        }
+      });
+    }
+
+    // ---------- TOUR DE CAPACITACIÓN ----------
+    let pasoActualTour = 0;
+    const pasosTour = [
+      { tab: 'home', selector: '#searchInput', titulo: 'Busca cualquier paquete', texto: 'Escribe el UTD, el nombre del cliente o el estante. Si hay una sola coincidencia, te preguntamos si ya se entregó.' },
+      { tab: 'home', selector: '#densidadGrupo', titulo: 'Ajusta la densidad de la lista', texto: 'Elige qué tan compacta o amplia se ve la lista. En "AUTO" la app decide sola según cuántos paquetes hay en pantalla.' },
+      { tab: 'home', selector: '#ordenSelect', titulo: 'Cambia el orden', texto: 'Ordena por nombre, tiempo en tienda o UTD, según lo que necesites revisar en ese momento.' },
+      { tab: 'home', selector: '#btnTabRecepcion', titulo: 'Acomodar paquetes', texto: 'Aquí registras la entrada de mercancía nueva usando tu pistola lectora conectada por USB.' },
+      { tab: 'recepcion', selector: '#tableroEstantes', titulo: 'Elige tu estante en el tablero', texto: 'Toca un estante para activarlo. Puedes arrastrarlos para acomodarlos donde quieras: arriba A1-A2-A3, abajo B1-B2, etc.' },
+      { tab: 'recepcion', selector: '#scanInput', titulo: 'Escanea y listo', texto: 'Cada código que pases con la pistola se guarda solo, al instante, en el estante activo. Sin botones de guardar.' },
+      { tab: 'recepcion', selector: '#listaSesionScan', titulo: 'Ve lo que vas escaneando', texto: 'Aquí aparece cada paquete recién guardado. Si un UTD se repite, te pide el nombre del cliente para no confundirlos.' },
+      { tab: 'recepcion', selector: '#btnTabAuditoria', titulo: 'Auditoría de estantes', texto: 'Aquí revisas que lo que dice el sistema coincida con lo que hay físicamente en cada estante.' },
+      { tab: 'auditoria', selector: '#tableroEstantesAuditoria', titulo: 'Elige el estante a auditar', texto: 'Selecciona el estante que vas a revisar físicamente.' },
+      { tab: 'auditoria', selector: '#auditInput', titulo: 'Confirma lo que encuentres', texto: 'Ve escaneando cada paquete físico que veas ahí. Si un paquete pertenece a otro estante, te avisa.' },
+      { tab: 'auditoria', selector: '#btnSincronizarAuditoria', titulo: 'Sincroniza al final', texto: 'Marca como entregado lo que ya no esté físicamente en ese estante.' },
+      { tab: 'auditoria', selector: '#btnTabCierre', titulo: 'Cierre de turno', texto: 'Un resumen del día: recibidos, entregados y los últimos movimientos — con un botón para copiarlo y mandarlo por WhatsApp.' }
+    ];
+
+    function primerVisible(selectores) {
+      const lista = Array.isArray(selectores) ? selectores : [selectores];
+      for (const sel of lista) {
+        const el = document.querySelector(sel);
+        if (el && el.offsetParent !== null) return el;
+      }
+      return null;
+    }
+
+    function iniciarTour() {
+      pasoActualTour = 0;
+      document.getElementById('tourOverlay').style.display = 'block';
+      mostrarPasoTour();
+    }
+
+    function mostrarPasoTour() {
+      const paso = pasosTour[pasoActualTour];
+      if (!paso) { terminarTour(); return; }
+
+      const tabActivo = document.querySelector('.tab-content.active').id;
+      if (paso.tab !== tabActivo) {
+        const btn = document.getElementById('btnTab' + paso.tab.charAt(0).toUpperCase() + paso.tab.slice(1));
+        switchTab(paso.tab, btn);
+      }
+
+      setTimeout(() => {
+        const el = primerVisible(paso.selector);
+        if (!el) { pasoActualTour++; mostrarPasoTour(); return; }
+        posicionarTour(el);
+        document.getElementById('tourPaso').innerText = `${pasoActualTour + 1}/${pasosTour.length}`;
+        document.getElementById('tourTitulo').innerText = paso.titulo;
+        document.getElementById('tourTexto').innerText = paso.texto;
+        document.getElementById('tourBtnSiguiente').innerText = pasoActualTour === pasosTour.length - 1 ? '¡Listo! 🎉' : 'Siguiente →';
+      }, 200);
+    }
+
+    function posicionarTour(el) {
+      const rect = el.getBoundingClientRect();
+      const pad = 8;
+      const spot = document.getElementById('tourSpotlight');
+      spot.style.top = (rect.top - pad) + 'px';
+      spot.style.left = (rect.left - pad) + 'px';
+      spot.style.width = (rect.width + pad * 2) + 'px';
+      spot.style.height = (rect.height + pad * 2) + 'px';
+
+      const tooltip = document.getElementById('tourTooltip');
+      const espacioAbajo = window.innerHeight - rect.bottom;
+      tooltip.style.top = espacioAbajo > 200
+        ? (rect.bottom + 16) + 'px'
+        : Math.max(16, rect.top - 200) + 'px';
+      const anchoTooltip = Math.min(320, window.innerWidth - 32);
+      tooltip.style.left = Math.max(16, Math.min(rect.left, window.innerWidth - anchoTooltip - 16)) + 'px';
+    }
+
+    function siguientePasoTour() {
+      pasoActualTour++;
+      mostrarPasoTour();
+    }
+
+    function terminarTour() {
+      document.getElementById('tourOverlay').style.display = 'none';
+      localStorage.setItem('capacitacion_completada_laptop', '1');
+    }
+
+    window.onload = function() {
+      const savedTheme = localStorage.getItem('theme_preference');
+      if (savedTheme === 'light') {
+        document.body.classList.add('light-theme');
+        document.getElementById('themeBtn').innerText = '🌙';
+      }
+
+      document.getElementById('ordenSelect').value = ordenPreferido;
+      aplicarPersonalizacion();
+      actualizarEstadoDemo();
+      llamar('obtenerConfigUTD', [], data => { digitosUTD = data.digitos; });
+
+      // Si quedaron paquetes pendientes de una sesión anterior (se cerró la
+      // laptop antes de que volviera el internet), lo intenta apenas abres.
+      guardarColaOffline();
+      reintentarColaOffline();
+      window.addEventListener('online', reintentarColaOffline);
+      setInterval(reintentarColaOffline, 8000);
+
+      mostrarSkeleton();
+      pintarSaludo();
+      cargarEstantesYDatos();
+      focusInputMostrador();
+
+      actualizarReloj();
+      setInterval(actualizarReloj, 1000);
+
+      ajustarStickyTablero();
+      window.addEventListener('resize', ajustarStickyTablero);
+
+      // El saludo y "llevas X paquetes hoy" antes solo se calculaban al cargar
+      // la página — ahora se refrescan solos cada minuto.
+      setInterval(pintarSaludo, 60000);
+
+      // Limpia de la vista (no de la hoja) lo que ya lleva 30+ min en la lista
+      // de "recién escaneado", para que no crezca sin fin durante el turno.
+      setInterval(() => {
+        const ahora = Date.now();
+        let cambio = false;
+        historialSesion.forEach(item => {
+          if (!item.eliminado && !item.requiereNombre && item.agregadoEn && (ahora - item.agregadoEn > SESION_EXPIRA_MS)) {
+            item.eliminado = true;
+            cambio = true;
+          }
+        });
+        if (cambio) renderHistorialSesion();
+      }, 60000);
+
+      setInterval(() => {
+        const activo = document.querySelector('.tab-content.active');
+        if (activo && activo.id !== 'recepcion') obtenerDatosServidorSilent();
+      }, 4000);
+
+      document.getElementById('scanInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') { e.preventDefault(); agregarManualInstant(this.value); this.value = ''; }
+      });
+      document.getElementById('scanInput').addEventListener('keydown', function(e) {
+        if (this.value !== '') return; // no interfiere si ya estás escribiendo/escaneando algo
+        const mapa = { ArrowRight: 'right', ArrowLeft: 'left', ArrowUp: 'up', ArrowDown: 'down' };
+        if (mapa[e.key]) { e.preventDefault(); moverSeleccionConFlechas(mapa[e.key]); }
+      });
+      document.getElementById('auditInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') { e.preventDefault(); procesarEscaneoAuditoria(this.value); this.value = ''; }
+      });
+      document.getElementById('auditInput').addEventListener('keydown', function(e) {
+        if (this.value !== '') return;
+        const mapa = { ArrowRight: 'right', ArrowLeft: 'left', ArrowUp: 'up', ArrowDown: 'down' };
+        if (mapa[e.key]) { e.preventDefault(); moverSeleccionAuditoriaConFlechas(mapa[e.key]); }
+      });
+      document.getElementById('buscarInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') { e.preventDefault(); clearTimeout(buscarDebounceTimer); llamar('buscarPaquetePorCodigo', [this.value.trim()], data => renderResultadosBuscar(data, this.value.trim())); }
+      });
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+          document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
+          if (!document.getElementById('home').classList.contains('active')) {
+            switchTab('home', document.getElementById('btnTabHome'));
+          }
+          document.getElementById('searchInput').value = '';
+          filtrarMostrador();
+          focusInputMostrador();
+          return;
+        }
+
+        // Enter también cierra el aviso de atención de Acomodar si está
+        // abierto — no se detiene nada más, el escaneo sigue su curso normal.
+        if (e.key === 'Enter') {
+          const overlay = document.getElementById('overlayAtencionEscaneo');
+          if (overlay && overlay.style.display !== 'none') cerrarOverlayAtencion();
+        }
+
+        // Ctrl + flecha izq/der cambia de pestaña (cíclico). Se deja funcionar
+        // incluso con el buscador/escáner enfocado, pero no dentro de campos de
+        // texto reales (nombre, características) donde Ctrl+flecha sirve para
+        // moverse por palabras.
+        if (e.ctrlKey && (e.key === 'ArrowRight' || e.key === 'ArrowLeft')) {
+          const elFoco = document.activeElement;
+          const idsPermitidos = ['scanInput', 'auditInput', 'buscarInput', 'searchInput'];
+          const enCampoBloqueado = elFoco && (elFoco.tagName === 'INPUT' || elFoco.tagName === 'TEXTAREA') && !idsPermitidos.includes(elFoco.id);
+          if (!enCampoBloqueado) {
+            e.preventDefault();
+            cambiarPestanaConFlechas(e.key === 'ArrowRight' ? 1 : -1);
+          }
+          return;
+        }
+
+        // Ctrl+K: ir directo a Buscar desde cualquier pantalla.
+        if (e.ctrlKey && e.key.toLowerCase() === 'k') {
+          e.preventDefault();
+          switchTab('buscar', document.getElementById('btnTabBuscar'));
+          return;
+        }
+
+        // Ctrl+Z: deshace el último paquete escaneado (solo mientras estás en Acomodar).
+        if (e.ctrlKey && e.key.toLowerCase() === 'z') {
+          const elFoco = document.activeElement;
+          const idsPermitidos = ['scanInput', 'auditInput', 'buscarInput', 'searchInput'];
+          const enCampoBloqueado = elFoco && (elFoco.tagName === 'INPUT' || elFoco.tagName === 'TEXTAREA') && !idsPermitidos.includes(elFoco.id);
+          if (!enCampoBloqueado && document.getElementById('recepcion').classList.contains('active')) {
+            e.preventDefault();
+            deshacerUltimoEscaneo();
+          }
+          return;
+        }
+
+        // Enter confirma la entrega cuando está abierto el modal de "¿ya entregaste?"
+        if (e.key === 'Enter' && document.getElementById('modalPreguntaEntrega').style.display === 'flex') {
+          e.preventDefault();
+          confirmarEntregaDesdeModal();
+          return;
+        }
+
+        // Atajo: teclear un número desde cualquier lugar salta directo al buscador del Mostrador.
+        const activo = document.activeElement;
+        const enCampoDeTexto = activo && (activo.tagName === 'INPUT' || activo.tagName === 'TEXTAREA');
+        const hayModalAbierto = Array.from(document.querySelectorAll('.modal-overlay')).some(m => m.style.display === 'flex');
+
+        if (!enCampoDeTexto && !hayModalAbierto && /^[0-9]$/.test(e.key) && !e.ctrlKey && !e.metaKey && !e.altKey) {
+          if (!document.getElementById('home').classList.contains('active')) {
+            switchTab('home', document.getElementById('btnTabHome'));
+          }
+          const input = document.getElementById('searchInput');
+          input.focus();
+          input.value += e.key;
+          filtrarMostrador();
+          e.preventDefault();
+        }
+      });
+
+      // Mantén presionado Ctrl medio segundo (sin combinarlo con otra tecla) y
+      // aparece la lista de atajos disponibles — como en Discord o Photoshop.
+      // Si en ese medio segundo presionas otra tecla, se cancela el menú y el
+      // atajo se ejecuta normal, para no estorbar a quien ya se los sabe.
+      let temporizadorMenuAtajos = null;
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Control' && !temporizadorMenuAtajos) {
+          temporizadorMenuAtajos = setTimeout(() => {
+            document.getElementById('modalAtajos').style.display = 'flex';
+          }, 450);
+        } else if (e.ctrlKey && e.key !== 'Control' && temporizadorMenuAtajos) {
+          clearTimeout(temporizadorMenuAtajos);
+          temporizadorMenuAtajos = null;
+        }
+      });
+      document.addEventListener('keyup', function(e) {
+        if (e.key === 'Control') {
+          clearTimeout(temporizadorMenuAtajos);
+          temporizadorMenuAtajos = null;
+          document.getElementById('modalAtajos').style.display = 'none';
+        }
+      });
+      window.addEventListener('blur', function() {
+        clearTimeout(temporizadorMenuAtajos);
+        temporizadorMenuAtajos = null;
+        document.getElementById('modalAtajos').style.display = 'none';
+      });
+
+      // Clic en una zona vacía (fondo, no una tarjeta ni un botón) limpia la búsqueda.
+      document.querySelectorAll('.container, .tab-content').forEach(zona => {
+        zona.addEventListener('click', function(e) {
+          if (e.target === zona && document.getElementById('home').classList.contains('active')) {
+            limpiarBusqueda();
+          }
+        });
+      });
+
+      // Primera vez que se abre la app en esta laptop: arranca la capacitación sola.
+      if (!localStorage.getItem('capacitacion_completada_laptop')) {
+        setTimeout(iniciarTour, 900);
+      }
+    };
+
+    function mostrarSkeleton() {
+      document.getElementById('listaMostrador').innerHTML = '<div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>';
+    }
+
+    function pintarSaludo() {
+      const h = new Date().getHours();
+      const emoji = h < 12 ? '☀️' : h < 19 ? '🌤️' : '🌙';
+      const saludo = h < 12 ? '¡Buenos días!' : h < 19 ? '¡Buenas tardes!' : '¡Buenas noches!';
+
+      const elEmoji = document.getElementById('rachaEmoji');
+      const elSaludo = document.getElementById('rachaSaludo');
+      if (elEmoji) elEmoji.innerText = emoji;
+      if (elSaludo) elSaludo.innerText = saludo;
+
+      llamar('obtenerRachaDelDia', [], data => {
+        const card = document.getElementById('rachaCard');
+        const dato = document.getElementById('rachaDato');
+        if (!card || !dato) return;
+        card.style.display = 'flex';
+
+        if (data.recibidosHoy === 0) {
+          dato.innerHTML = 'Todavía no registras paquetes hoy.';
+          return;
+        }
+
+        if (data.diffPercent === null || data.muestras < 2) {
+          dato.innerHTML = `Llevas <b>${data.recibidosHoy}</b> paquete${data.recibidosHoy === 1 ? '' : 's'} hoy.`;
+          return;
+        }
+
+        if (data.diffPercent > 5) {
+          dato.innerHTML = `Llevas <b>${data.recibidosHoy}</b> paquetes hoy — <span class="up">${data.diffPercent}% más 📈</span> que un ${data.diaSemanaTexto} normal.`;
+        } else if (data.diffPercent < -5) {
+          dato.innerHTML = `Llevas <b>${data.recibidosHoy}</b> paquetes hoy — ${Math.abs(data.diffPercent)}% menos que un ${data.diaSemanaTexto} normal.`;
+        } else {
+          dato.innerHTML = `Llevas <b>${data.recibidosHoy}</b> paquetes hoy — igual que un ${data.diaSemanaTexto} normal.`;
+        }
+      });
+    }
+
+    function actualizarReloj() {
+      const ahora = new Date();
+      const horaEl = document.getElementById('relojHora');
+      const fechaEl = document.getElementById('relojFecha');
+      if (horaEl) {
+        let h = ahora.getHours();
+        const m = String(ahora.getMinutes()).padStart(2, '0');
+        const s = String(ahora.getSeconds()).padStart(2, '0');
+        const ampm = h >= 12 ? 'p.m.' : 'a.m.';
+        h = h % 12; if (h === 0) h = 12;
+        horaEl.innerHTML = `${h}<span class="reloj-dp">:</span>${m}<span class="reloj-dp">:</span>${s} <span style="font-size:10.5px; font-weight:700; opacity:.7;">${ampm}</span>`;
+      }
+      if (fechaEl) {
+        const texto = ahora.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+        fechaEl.innerText = texto.charAt(0).toUpperCase() + texto.slice(1);
+      }
+    }
+
+    function ajustarStickyTablero() {
+      const topbar = document.querySelector('.topbar');
+      if (!topbar) return;
+      const alto = Math.round(topbar.getBoundingClientRect().height);
+      document.documentElement.style.setProperty('--topbar-alto', alto + 'px');
+    }
+
+    function focusInputMostrador() { setTimeout(() => { const i = document.getElementById('searchInput'); if (i) { i.focus(); i.select(); } }, 150); }
+    // Reenfoca sin seleccionar todo el texto — para usar justo después de acciones
+    // (entregar, devolver, editar...) donde el usuario puede seguir tecleando de
+    // inmediato el siguiente UTD. Si aquí seleccionáramos el texto como arriba, la
+    // siguiente tecla que presione reemplazaría lo que ya llevaba escrito.
+    function refocusInputMostrador() { const i = document.getElementById('searchInput'); if (i) i.focus(); }
+    function focusInputAcomodar() { setTimeout(() => { const i = document.getElementById('scanInput'); if (i) i.focus(); }, 150); }
+
+    function toggleTheme() {
+      document.body.classList.toggle('light-theme');
+      const isLight = document.body.classList.contains('light-theme');
+      document.getElementById('themeBtn').innerText = isLight ? '🌙' : '☀️';
+      localStorage.setItem('theme_preference', isLight ? 'light' : 'dark');
+    }
+
+    const ORDEN_PESTANAS = [
+      { id: 'home', btnId: 'btnTabHome' },
+      { id: 'recepcion', btnId: 'btnTabRecepcion' },
+      { id: 'auditoria', btnId: 'btnTabAuditoria' },
+      { id: 'buscar', btnId: 'btnTabBuscar' },
+      { id: 'vencidos', btnId: 'btnTabVencidos' },
+      { id: 'cierre', btnId: 'btnTabCierre' }
+    ];
+
+    function cambiarPestanaConFlechas(delta) {
+      const actual = document.querySelector('.tab-content.active');
+      const idxActual = ORDEN_PESTANAS.findIndex(t => t.id === (actual && actual.id));
+      const idxNuevo = ((idxActual === -1 ? 0 : idxActual) + delta + ORDEN_PESTANAS.length) % ORDEN_PESTANAS.length;
+      const destino = ORDEN_PESTANAS[idxNuevo];
+      switchTab(destino.id, document.getElementById(destino.btnId));
+    }
+
+    function switchTab(tabId, btnEl) {
+      const previa = document.querySelector('.tab-content.active');
+      document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+      if (btnEl) btnEl.classList.add('active');
+
+      if (previa && previa.id !== tabId) {
+        previa.classList.remove('active');
+        previa.classList.add('leaving');
+        setTimeout(() => previa.classList.remove('leaving'), 150);
+      }
+      document.getElementById(tabId).classList.add('active');
+
+      renderSemaforoEstantes();
+      if (tabId === 'cierre') renderCierreTurno();
+      if (tabId === 'auditoria') inicializarVistaAuditoria();
+      if (tabId === 'vencidos') renderVistaVencidos();
+      if (tabId === 'home') { renderTableroMostrador(); focusInputMostrador(); }
+      if (tabId === 'recepcion') {
+        const txt = document.getElementById('estanteActivoTexto');
+        if (txt) { txt.innerText = estanteSeleccionado || '—'; actualizarColorPillEstante(txt, estanteSeleccionado); }
+        renderTablero();
+        renderHistorialSesion();
+        focusInputAcomodar();
+      }
+      if (tabId === 'buscar') {
+        renderTableroBuscar();
+        setTimeout(() => { const i = document.getElementById('buscarInput'); if (i) { i.focus(); i.select(); } }, 150);
+      }
+    }
+
+    function abrirAjustes() { window.open("<?= ScriptApp.getService().getUrl() ?>?page=Ajustes", "_top"); }
+    function abrirMovil() { window.open("<?= ScriptApp.getService().getUrl() ?>?page=Movil", "_top"); }
+
+    function cargarEstantesYDatos() {
+      llamar('obtenerEstantesConLayout', [], data => {
+        estantes = data.estantes;
+        layoutEstantes = (data.layout && data.layout.length > 0) ? data.layout : (estantes.length ? [estantes] : []);
+        capacidadesEstantes = data.capacidades || {};
+        if (estantes.length > 0 && !estanteSeleccionado) {
+          const ultimoUsado = localStorage.getItem('ultimo_estante');
+          estanteSeleccionado = (ultimoUsado && estantes.includes(ultimoUsado)) ? ultimoUsado : estantes[0];
+          estanteAuditoria = estanteSeleccionado;
+        }
+        obtenerDatosServidor();
+      });
+    }
+
+    function obtenerDatosServidor() {
+      llamar('obtenerPaquetesYMetricas', [], res => {
+        paquetesBase = res.paquetes;
+        conteoEstantes = res.conteoEstantes;
+        resumenDia = res.resumenDia;
+
+        // Un paquete "vencido" (5+ días hábiles) ya no cuenta como "en tienda" para el
+        // dueño — sigue siendo buscable y entregable, pero deja de sumar en el total
+        // hasta que se confirme su devolución al chofer en la pestaña Por Vencer.
+        const vencidosCount = paquetesBase.filter(p => esMasDe5DiasHabiles(p.fechaEntrada)).length;
+        document.getElementById('totalMetrica').innerText = paquetesBase.length - vencidosCount;
+        const badge = document.getElementById('badgeVencidos');
+        if (vencidosCount > 0) { badge.style.display = 'inline'; badge.innerText = vencidosCount; } else { badge.style.display = 'none'; }
+
+        const txt = document.getElementById('estanteActivoTexto');
+        if (txt) { txt.innerText = estanteSeleccionado || '—'; actualizarColorPillEstante(txt, estanteSeleccionado); }
+
+        renderSemaforoEstantes();
+        renderTablero();
+        renderHistorialSesion();
+        filtrarMostrador();
+        renderCierreTurno();
+        if (document.getElementById('vencidos').classList.contains('active')) renderVistaVencidos();
+        if (document.getElementById('auditoria').classList.contains('active')) inicializarVistaAuditoria();
+        if (document.getElementById('buscar').classList.contains('active')) renderTableroBuscar();
+      });
+    }
+
+    function obtenerDatosServidorSilent() {
+      llamar('obtenerPaquetesYMetricas', [], res => {
+        if (JSON.stringify(res.paquetes) !== JSON.stringify(paquetesBase)) {
+          paquetesBase = res.paquetes;
+          conteoEstantes = res.conteoEstantes;
+          resumenDia = res.resumenDia;
+          const vencidosCount = paquetesBase.filter(p => esMasDe5DiasHabiles(p.fechaEntrada)).length;
+          document.getElementById('totalMetrica').innerText = paquetesBase.length - vencidosCount;
+          const badge = document.getElementById('badgeVencidos');
+          if (vencidosCount > 0) { badge.style.display = 'inline'; badge.innerText = vencidosCount; } else { badge.style.display = 'none'; }
+          renderSemaforoEstantes();
+          renderTablero();
+          filtrarMostrador();
+          renderCierreTurno();
+          if (document.getElementById('vencidos').classList.contains('active')) renderVistaVencidos();
+          if (document.getElementById('auditoria').classList.contains('active')) renderListaAuditoria();
+          if (document.getElementById('buscar').classList.contains('active')) renderTableroBuscar();
+        }
+      });
+    }
+
+    function renderVistaVencidos() {
+      const cont = document.getElementById('listaVencidosCont');
+      const contBtns = document.getElementById('btnDevolverTodosCont');
+      cont.innerHTML = ''; contBtns.innerHTML = '';
+
+      const vencidosList = paquetesBase
+        .filter(p => esMasDe5DiasHabiles(p.fechaEntrada))
+        .sort((a, b) => new Date(a.fechaEntrada) - new Date(b.fechaEntrada));
+      document.getElementById('totalVencidosHeader').innerText = vencidosList.length;
+
+      const banner = document.getElementById('vencidosBanner');
+      if (vencidosList.length > 0) {
+        banner.style.display = 'flex';
+        document.getElementById('vencidosBannerTitulo').innerText = `${vencidosList.length} paquete${vencidosList.length === 1 ? '' : 's'} lleva${vencidosList.length === 1 ? '' : 'n'} más de 5 días hábiles esperando`;
+      } else {
+        banner.style.display = 'none';
+      }
+
+      if (vencidosList.length === 0) {
+        cont.innerHTML = `<div class="empty-state"><div class="glyph">✅</div><div class="title">Todo al día</div><div class="sub">No hay paquetes vencidos ni por devolver en la agencia.</div></div>`;
+        return;
+      }
+
+      const filasVencidas = vencidosList.map(p => p.numFila);
+      contBtns.innerHTML = `<button class="btn-action" style="width:100%; background:var(--red); padding:14px; font-size:13px; font-weight:900;" onclick='pedirAccionLote("devolver", ${JSON.stringify(filasVencidas)})'>🚛 DEVOLVER A CHOFER TODOS (${vencidosList.length})</button>`;
+
+      vencidosList.forEach(p => {
+        const item = document.createElement('div');
+        item.className = 'card-item red-alert';
+        const badgeClase = obtenerClaseUbicacionBadge(p.ubicacion);
+        item.innerHTML = `
+          <div class="item-info">
+            <span class="utd-tag">${p.utd}</span>
+            <div class="item-text">
+              <div class="item-name">${nombreMostrar(p.nombre)}</div>
+              <div class="item-sub">Guía ${p.guia} · <b style="color:var(--red);">+5 días en tienda</b></div>
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; gap:4px;">
+            <div class="ub-badge ${badgeClase}"><span class="dot-pulse"></span><span>${escapeHtml(p.ubicacion)}</span></div>
+            <button class="btn-action" style="background:var(--red);" onclick="devolverChoferML([${p.numFila}])">DEVUELTO 🚛</button>
+          </div>`;
+        cont.appendChild(item);
+      });
+    }
+
+    function renderCierreTurno() {
+      document.getElementById('cierreRecibidos').innerText = resumenDia.recibidosHoy;
+      document.getElementById('cierreEntregados').innerText = resumenDia.entregadosHoy;
+      document.getElementById('cierreEnTienda').innerText = paquetesBase.filter(p => !esMasDe5DiasHabiles(p.fechaEntrada)).length;
+
+      const cont = document.getElementById('listaUltimosEntregados');
+      if (!resumenDia.ultimosEntregados || resumenDia.ultimosEntregados.length === 0) {
+        cont.innerHTML = `<div class="empty-state"><div class="glyph">🕒</div><div class="title">Nada entregado todavía</div><div class="sub">Aquí verás los últimos paquetes entregados hoy.</div></div>`;
+        return;
+      }
+      cont.innerHTML = resumenDia.ultimosEntregados.map(p => `
+        <div class="card-item">
+          <div class="item-info">
+            <span class="check-entregado">✓</span>
+            <span class="utd-tag">${p.utd}</span>
+            <div class="item-text">
+              <div class="item-name">${nombreMostrar(p.nombre)}</div>
+              <div class="item-sub">Entregado a las <b>${p.horaSalida}</b></div>
+            </div>
+          </div>
+          <button class="btn-action" style="background:var(--surface-2); color:var(--text-main); border:1px solid var(--line);" onclick="ejecutarDeshacer(${p.numFila})">↩ Revertir</button>
+        </div>`).join('');
+    }
+
+    function descargarResumenCierre() {
+      const texto = `CIERRE DE TURNO — ${nombreMarcaActual.toUpperCase()}\n${new Date().toLocaleDateString('es-MX')}\n\nRecibidos hoy: ${resumenDia.recibidosHoy}\nEntregados hoy: ${resumenDia.entregadosHoy}\nEn tienda ahora: ${paquetesBase.length}`;
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(texto).then(() => showToast('📋 Resumen copiado al portapapeles', 'success'))
+          .catch(() => showToast('No se pudo copiar automáticamente', 'error'));
+      } else {
+        showToast('Tu navegador no permite copiar automáticamente', 'error');
+      }
+    }
+
+    function obtenerCapacidad(nombreEstante) {
+      const cap = capacidadesEstantes && capacidadesEstantes[nombreEstante];
+      return (cap && cap > 0) ? cap : CAPACIDAD_ESTANTE_DEFECTO;
+    }
+
+    function calcularSemaforo(cant, nombreEstante) {
+      const capacidad = obtenerCapacidad(nombreEstante);
+      const umbralAmarillo = Math.round(capacidad * 0.6); // 6 de 10 por defecto, igual que antes
+      if (cant >= capacidad) return { clase: 'sem-rojo', texto: 'Lleno' };
+      if (cant >= umbralAmarillo) return { clase: 'sem-amarillo', texto: 'Revisar' };
+      return { clase: 'sem-verde', texto: 'Libre' };
+    }
+
+    // Medidor circular tipo "dona": se va llenando con el color del semáforo
+    // según qué tan cerca está el estante de su capacidad configurada.
+    function colorSemaforo(clase) {
+      if (clase === 'sem-rojo') return 'var(--red)';
+      if (clase === 'sem-amarillo') return 'var(--warning)';
+      return 'var(--green)';
+    }
+
+    function medidorHTML(cant, claseSemaforo, nombreEstante) {
+      const capacidad = obtenerCapacidad(nombreEstante);
+      const pct = cant <= 0 ? 0 : Math.min(100, Math.round((cant / capacidad) * 100));
+      return `<div class="tile-medidor" style="--pct:${pct}; --anillo-color:${colorSemaforo(claseSemaforo)};"><span>${cant}</span></div>`;
+    }
+
+    function renderSemaforoEstantes() {
+      const cont = document.getElementById('tableroEstantesAuditoria');
+      if (!cont) return;
+      cont.innerHTML = '';
+
+      if (!estantes || estantes.length === 0) {
+        cont.innerHTML = `<div class="empty-state"><div class="glyph">📍</div><div class="title">No hay estantes configurados</div><div class="sub">Ve a Ajustes para crear tu primer estante.</div></div>`;
+        return;
+      }
+
+      const filas = (layoutEstantes && layoutEstantes.length > 0) ? layoutEstantes : [estantes];
+      filas.forEach(fila => {
+        const filaEl = document.createElement('div');
+        filaEl.className = 'fila-estantes';
+        fila.forEach(nombre => {
+          const key = String(nombre).trim();
+          const cant = conteoEstantes[key] || 0;
+          const sem = calcularSemaforo(cant, key);
+          const tile = document.createElement('div');
+          tile.className = `tile-estante ${sem.clase} ${key === estanteAuditoria ? 'selected' : ''}`;
+          tile.innerHTML = `<span class="tile-nombre">${escapeHtml(key)}</span><span class="tile-conteo">${cant}</span><div class="tile-status">${sem.texto}</div>`;
+          tile.onclick = () => seleccionarEstanteAuditoria(key);
+          filaEl.appendChild(tile);
+        });
+        cont.appendChild(filaEl);
+      });
+    }
+
+    // ---------- TABLERO DE ESTANTES (drag & drop, pantalla Acomodar) ----------
+    let dragOrigen = null;
+
+    function renderTablero() {
+      const cont = document.getElementById('tableroEstantes');
+      if (!cont) return;
+      cont.innerHTML = '';
+
+      if (!estantes || estantes.length === 0) {
+        cont.innerHTML = `<div class="empty-state"><div class="glyph">📍</div><div class="title">No hay estantes configurados</div><div class="sub">Ve a Ajustes para crear tu primer estante.</div></div>`;
+        return;
+      }
+
+      layoutEstantes.forEach((fila, filaIdx) => {
+        const filaEl = document.createElement('div');
+        filaEl.className = 'fila-estantes';
+        filaEl.ondragover = (e) => { e.preventDefault(); filaEl.classList.add('drag-over'); };
+        filaEl.ondragleave = () => filaEl.classList.remove('drag-over');
+        filaEl.ondrop = (e) => { e.preventDefault(); filaEl.classList.remove('drag-over'); moverEstanteEnLayout(filaIdx, fila.length); };
+
+        fila.forEach((nombre, colIdx) => {
+          const cant = conteoEstantes[nombre] || 0;
+          const sem = calcularSemaforo(cant, nombre);
+          const tile = document.createElement('div');
+          tile.className = `tile-estante ${sem.clase} ${nombre === estanteSeleccionado ? 'selected' : ''}`;
+          tile.draggable = true;
+          tile.innerHTML = `<span class="tile-nombre">${escapeHtml(nombre)}</span>${medidorHTML(cant, sem.clase, nombre)}<div class="tile-status">${sem.texto}</div>`;
+
+          tile.ondragstart = (e) => { dragOrigen = { fila: filaIdx, col: colIdx }; e.dataTransfer.effectAllowed = 'move'; setTimeout(() => tile.classList.add('dragging'), 0); };
+          tile.ondragend = () => tile.classList.remove('dragging');
+          tile.ondragover = (e) => { e.preventDefault(); e.stopPropagation(); };
+          tile.ondrop = (e) => { e.preventDefault(); e.stopPropagation(); moverEstanteEnLayout(filaIdx, colIdx); };
+          tile.onclick = () => seleccionarEstante(nombre);
+
+          filaEl.appendChild(tile);
+        });
+
+        cont.appendChild(filaEl);
+      });
+
+      const nuevaFilaZone = document.createElement('div');
+      nuevaFilaZone.className = 'drop-zone-nueva-fila';
+      nuevaFilaZone.innerText = '+ Soltar aquí para crear una fila nueva';
+      nuevaFilaZone.ondragover = (e) => { e.preventDefault(); nuevaFilaZone.classList.add('drag-over'); };
+      nuevaFilaZone.ondragleave = () => nuevaFilaZone.classList.remove('drag-over');
+      nuevaFilaZone.ondrop = (e) => {
+        e.preventDefault();
+        nuevaFilaZone.classList.remove('drag-over');
+        if (!dragOrigen) return;
+        const filaOrigenArr = layoutEstantes[dragOrigen.fila];
+        if (!filaOrigenArr) return;
+        const nombre = filaOrigenArr[dragOrigen.col];
+        filaOrigenArr.splice(dragOrigen.col, 1);
+        layoutEstantes.push([nombre]);
+        layoutEstantes = layoutEstantes.filter(f => f.length > 0);
+        dragOrigen = null;
+        renderTablero();
+        guardarLayoutRemoto();
+      };
+      cont.appendChild(nuevaFilaZone);
+    }
+
+    function moverEstanteEnLayout(filaDestinoIdx, colDestino) {
+      if (!dragOrigen) return;
+      const filaOrigenArr = layoutEstantes[dragOrigen.fila];
+      const filaDestinoArr = layoutEstantes[filaDestinoIdx];
+      if (!filaOrigenArr || !filaDestinoArr) { dragOrigen = null; return; }
+
+      const nombre = filaOrigenArr[dragOrigen.col];
+      filaOrigenArr.splice(dragOrigen.col, 1);
+
+      const colFinal = Math.min(colDestino, filaDestinoArr.length);
+      filaDestinoArr.splice(colFinal, 0, nombre);
+
+      layoutEstantes = layoutEstantes.filter(f => f.length > 0);
+
+      dragOrigen = null;
+      renderTablero();
+      guardarLayoutRemoto();
+    }
+
+    let guardarLayoutTimeout = null;
+    function guardarLayoutRemoto() {
+      clearTimeout(guardarLayoutTimeout);
+      guardarLayoutTimeout = setTimeout(() => {
+        llamar('guardarLayoutEstantes', [layoutEstantes], () => {});
+      }, 350);
+    }
+
+    function seleccionarEstante(nombre) {
+      estanteSeleccionado = nombre;
+      localStorage.setItem('ultimo_estante', nombre);
+      const txt = document.getElementById('estanteActivoTexto');
+      if (txt) { txt.innerText = nombre; actualizarColorPillEstante(txt, nombre); }
+      renderTablero();
+      focusInputAcomodar();
+
+      const cant = conteoEstantes[nombre] || 0;
+      const capacidad = obtenerCapacidad(nombre);
+      if (cant >= capacidad) {
+        showToast(`⚠️ ${nombre} ya tiene ${cant} de ${capacidad} — considera usar otro estante`, 'error');
+      }
+    }
+
+    // Deja moverse por el tablero de Acomodar con las flechas del teclado,
+    // sin soltar la pistola para hacer clic. Salta de fila cuando te sales
+    // por un extremo, como en una hoja de cálculo.
+    // Calcula a qué estante saltarías desde uno dado, moviéndote en una
+    // dirección dentro de la cuadrícula del tablero (mismo acomodo que armas
+    // arrastrando). La comparten Acomodar y Auditoría.
+    function calcularVecinoEstante(seleccionActual, direccion) {
+      if (!layoutEstantes || layoutEstantes.length === 0) return null;
+
+      let filaIdx = -1, colIdx = -1;
+      for (let f = 0; f < layoutEstantes.length; f++) {
+        const c = layoutEstantes[f].indexOf(seleccionActual);
+        if (c !== -1) { filaIdx = f; colIdx = c; break; }
+      }
+
+      if (filaIdx === -1) {
+        return (layoutEstantes[0] && layoutEstantes[0][0]) || null;
+      }
+
+      let nuevaFila = filaIdx, nuevaCol = colIdx;
+
+      if (direccion === 'left' || direccion === 'right') {
+        nuevaCol = colIdx + (direccion === 'right' ? 1 : -1);
+        if (nuevaCol < 0) {
+          nuevaFila = filaIdx - 1;
+          if (nuevaFila < 0) return null;
+          nuevaCol = layoutEstantes[nuevaFila].length - 1;
+        } else if (nuevaCol >= layoutEstantes[filaIdx].length) {
+          nuevaFila = filaIdx + 1;
+          if (nuevaFila >= layoutEstantes.length) return null;
+          nuevaCol = 0;
+        }
+      } else {
+        nuevaFila = filaIdx + (direccion === 'down' ? 1 : -1);
+        if (nuevaFila < 0 || nuevaFila >= layoutEstantes.length) return null;
+        nuevaCol = Math.min(colIdx, layoutEstantes[nuevaFila].length - 1);
+      }
+
+      return (layoutEstantes[nuevaFila] && layoutEstantes[nuevaFila][nuevaCol]) || null;
+    }
+
+    function moverSeleccionConFlechas(direccion) {
+      const nuevoNombre = calcularVecinoEstante(estanteSeleccionado, direccion);
+      if (nuevoNombre) { seleccionarEstante(nuevoNombre); vibrar(15); }
+    }
+
+    function seleccionarEstanteAuditoria(nombre) {
+      estanteAuditoria = nombre;
+      escaneadosAuditSet.clear();
+      renderSemaforoEstantes();
+      inicializarVistaAuditoria();
+    }
+
+    function moverSeleccionAuditoriaConFlechas(direccion) {
+      const nuevoNombre = calcularVecinoEstante(estanteAuditoria, direccion);
+      if (nuevoNombre) { seleccionarEstanteAuditoria(nuevoNombre); vibrar(15); }
+    }
+
+    function inicializarVistaAuditoria() {
+      const pill = document.getElementById('estanteAuditActivoTexto');
+      if (pill) { pill.innerText = estanteAuditoria || '—'; actualizarColorPillEstante(pill, estanteAuditoria); }
+      renderListaAuditoria();
+      setTimeout(() => document.getElementById('auditInput').focus(), 100);
+    }
+
+    function renderListaAuditoria() {
+      const registradosEnEstante = paquetesBase.filter(p => p.ubicacion === estanteAuditoria);
+      const confirmados = registradosEnEstante.filter(p => escaneadosAuditSet.has(p.utd) || escaneadosAuditSet.has(p.guia)).length;
+      document.getElementById('auditProgresoHeader').innerText = `${confirmados}/${registradosEnEstante.length}`;
+
+      const cont = document.getElementById('listaAuditoriaInteractiva');
+      cont.innerHTML = '';
+
+      if (registradosEnEstante.length === 0) {
+        cont.innerHTML = `<div class="empty-state"><div class="glyph">📭</div><div class="title">Estante vacío</div><div class="sub">${escapeHtml(estanteAuditoria)} no tiene paquetes registrados en el sistema.</div></div>`;
+        return;
+      }
+
+      registradosEnEstante.forEach(p => {
+        const esConfirmado = escaneadosAuditSet.has(p.utd) || escaneadosAuditSet.has(p.guia);
+        const item = document.createElement('div');
+        item.className = `card-item ${esConfirmado ? 'audit-ok' : 'audit-missing'}`;
+        item.innerHTML = `
+          <div class="item-info">
+            <span class="utd-tag">${p.utd}</span>
+            <div class="item-text">
+              <div class="item-name">${nombreMostrar(p.nombre)}</div>
+              <div class="item-sub">Guía ${p.guia}</div>
+            </div>
+          </div>
+          <div>${esConfirmado
+              ? '<span style="color:var(--green); font-weight:800; font-size:11.5px; background:rgba(0,166,80,.15); padding:4px 10px; border-radius:12px;">CONFIRMADO ✓</span>'
+              : '<span style="color:var(--red); font-weight:800; font-size:11.5px; background:rgba(239,68,68,.15); padding:4px 10px; border-radius:12px;">PENDIENTE</span>'}</div>`;
+        cont.appendChild(item);
+      });
+    }
+
+    function procesarEscaneoAuditoria(codigo) {
+      const res = extraerLocal(codigo);
+      if (!res.utd) { showToast('⚠️ Código no reconocido', 'error'); return false; }
+
+      if (res.guia.length !== LARGO_GUIA_ESPERADO) {
+        showToast(`⚠️ Este código se leyó incompleto (${res.guia.length} de ${LARGO_GUIA_ESPERADO} dígitos) — vuelve a escanearlo`, 'error');
+        vibrar([50, 40, 50, 40, 50]);
+        return false;
+      }
+
+      const paqueteEncontrado = paquetesBase.find(p => p.utd === res.utd || (res.guia && p.guia === res.guia));
+      if (paqueteEncontrado && paqueteEncontrado.ubicacion !== estanteAuditoria) {
+        showToast(`❌ ¡Error! Este paquete pertenece a ${escapeHtml(paqueteEncontrado.ubicacion)}, acomódalo allá.`, 'error');
+        vibrar([40, 60, 40, 60, 40]);
+        return;
+      }
+
+      escaneadosAuditSet.add(res.utd);
+      if (res.guia) escaneadosAuditSet.add(res.guia);
+      vibrar(35);
+      renderListaAuditoria();
+      document.getElementById('auditInput').focus();
+    }
+
+    function evaluarYConfirmarAuditoria() {
+      const registradosEnEstante = paquetesBase.filter(p => p.ubicacion === estanteAuditoria);
+      if (registradosEnEstante.length === 0) { showToast('⚠️ Este estante no tiene paquetes para auditar', 'error'); return; }
+
+      const faltantes = registradosEnEstante.filter(p => !escaneadosAuditSet.has(p.utd) && !escaneadosAuditSet.has(p.guia));
+      const confirmados = registradosEnEstante.length - faltantes.length;
+
+      if (faltantes.length > 0) {
+        filasFaltantesAuditoria = faltantes.map(f => f.numFila);
+        document.getElementById('msgAuditoriaEvaluacion').innerText = `Se escanearon ${confirmados} de ${registradosEnEstante.length}. Quedaron ${faltantes.length} sin encontrar:`;
+        document.getElementById('listaFaltantesAudit').innerHTML = faltantes.map(f => `• UTD ${f.utd} (${escapeHtml(f.nombre) || 'CLIENTE'})`).join('<br>');
+        document.getElementById('modalAuditoriaConfirm').style.display = 'flex';
+      } else {
+        showToast(`✅ Auditoría limpia en ${estanteAuditoria}. Todo confirmado.`, 'success');
+        escaneadosAuditSet.clear();
+        renderListaAuditoria();
+      }
+    }
+
+    function confirmarSalidaAuditoria() {
+      if (filasFaltantesAuditoria.length === 0) { cerrarModal('modalAuditoriaConfirm'); return; }
+      llamar('marcarEntregados', [filasFaltantesAuditoria], () => {
+        cerrarModal('modalAuditoriaConfirm');
+        showToast(`✅ ${filasFaltantesAuditoria.length} paquete(s) marcados como entregados`, 'success');
+        escaneadosAuditSet.clear();
+        filasFaltantesAuditoria = [];
+        cargarEstantesYDatos();
+      });
+    }
+
+    function extraerLocal(codigoBruto) {
+      if (!codigoBruto) return { guia: "", utd: "" };
+      let strOriginal = String(codigoBruto).trim();
+      let guiaFinal = "";
+
+      if (strOriginal.includes('"id":') || (strOriginal.startsWith('{') && strOriginal.endsWith('}'))) {
+        try {
+          let parsed = JSON.parse(strOriginal);
+          guiaFinal = parsed && parsed.id ? String(parsed.id).replace(/\D/g, '') : strOriginal.replace(/\D/g, '');
+        } catch(e) { guiaFinal = strOriginal.replace(/\D/g, ''); }
+      } else {
+        guiaFinal = strOriginal.replace(/\D/g, '');
+      }
+
+      if (!guiaFinal) return { guia: "", utd: "" };
+      if (guiaFinal.length > 11) guiaFinal = guiaFinal.slice(-11);
+      const utd = guiaFinal.length >= digitosUTD ? guiaFinal.slice(-digitosUTD) : guiaFinal.padStart(digitosUTD, '0');
+      return { guia: guiaFinal, utd: utd };
+    }
+
+    // ---------- ESCANEO INSTANTÁNEO (sin lote, sin botón de guardar) ----------
+    function agregarManualInstant(valorCrudo) {
+      const val = String(valorCrudo || '').trim();
+      if (!val) return;
+
+      // Si hay una tarjeta "armada" esperando su reintento, este escaneo es
+      // para completarla a ella, no para crear un paquete nuevo.
+      if (tempIdEnReintento) { manejarReescaneoPendiente(val); return; }
+
+      if (!estanteSeleccionado) {
+        showToast('⚠️ Selecciona un estante en el tablero antes de escanear', 'error');
+        focusInputAcomodar();
+        return;
+      }
+
+      const res = extraerLocal(val);
+      if (!res.utd || !res.guia) { showToast('⚠️ El código no contiene números válidos', 'error'); focusInputAcomodar(); return; }
+
+      if (res.guia.length !== LARGO_GUIA_ESPERADO) {
+        // No se rechaza ni se detiene el flujo: se agrega como tarjeta
+        // pendiente (en rojo) para resolverla cuando puedas, sin dejar de
+        // escanear los demás paquetes de la ráfaga.
+        contadorPaquetesSesion++;
+        const tempIdIncompleto = 'tmp_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+        const itemIncompleto = {
+          tempId: tempIdIncompleto, utd: res.utd || '—', guia: res.guia, nombre: '', caracteristicas: '',
+          ubicacion: estanteSeleccionado, requiereNombre: false, requiereReescaneo: true,
+          digitosLeidos: res.guia.length, guardando: false, eliminado: false,
+          agregadoEn: Date.now(), numeroSesion: contadorPaquetesSesion
+        };
+        historialSesion.unshift(itemIncompleto);
+        renderHistorialSesion();
+        mostrarAtencionEscaneo(itemIncompleto.numeroSesion, `Tiene ${res.guia.length} de ${LARGO_GUIA_ESPERADO} dígitos en la guía. Busca la tarjeta marcada con #${itemIncompleto.numeroSesion} (en rojo) en la lista, tócala y vuelve a escanear la guía completa.`);
+        vibrar([50, 40, 50, 40, 50]);
+        focusInputAcomodar();
+        return;
+      }
+
+      // Verificación rápida local (misma guía ya en tienda o ya escaneada en esta sesión)
+      const yaEnTiendaPkg = paquetesBase.find(p => p.guia === res.guia);
+      if (yaEnTiendaPkg) {
+        showToast(`⚠️ Ese paquete ya está guardado en ${escapeHtml(yaEnTiendaPkg.ubicacion)} (UTD ${res.utd})`, 'error');
+        vibrar([50, 40, 50, 40, 50]);
+        focusInputAcomodar();
+        return;
+      }
+      const yaEnSesionItem = historialSesion.find(h => h.guia === res.guia && !h.eliminado);
+      if (yaEnSesionItem) {
+        showToast(`⚠️ Acabas de escanear ese mismo paquete en ${escapeHtml(yaEnSesionItem.ubicacion)} (UTD ${res.utd})`, 'error');
+        vibrar([50, 40, 50, 40, 50]);
+        focusInputAcomodar();
+        return;
+      }
+
+      contadorPaquetesSesion++;
+      const estanteActual = estanteSeleccionado;
+      const tempId = 'tmp_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+      const item = { tempId, utd: res.utd, guia: res.guia, nombre: '', caracteristicas: '', ubicacion: estanteActual, requiereNombre: false, guardando: true, eliminado: false, agregadoEn: Date.now(), numeroSesion: contadorPaquetesSesion };
+      historialSesion.unshift(item);
+      renderHistorialSesion();
+      focusInputAcomodar();
+
+      llamar('registrarPaqueteInstantaneo', [estanteActual, { utd: res.utd, guia: res.guia, nombre: '', caracteristicas: '' }], data => {
+        item.guardando = false;
+        if (data.duplicadoExacto) {
+          item.eliminado = true;
+          showToast(`⚠️ Ese paquete ya estaba guardado en ${escapeHtml(data.ubicacionExistente || '—')} (UTD ${data.utd})`, 'error');
+          vibrar([50, 40, 50, 40, 50]);
+        } else if (data.requiereNombre) {
+          item.requiereNombre = true;
+          actualizarContadorSesion();
+          mostrarAtencionEscaneo(item.numeroSesion, `Su UTD (${item.utd}) ya lo tiene otro paquete en ${escapeHtml(item.ubicacion)}. Busca la tarjeta marcada con #${item.numeroSesion} (en amarillo) en la lista y escríbele el nombre del cliente.`);
+          vibrar([30, 60, 30]);
+        } else if (data.guardado) {
+          item.numFila = data.numFila;
+          conteoEstantes[estanteActual] = (conteoEstantes[estanteActual] || 0) + 1;
+          actualizarContadorSesion();
+          renderTablero();
+          vibrar(30);
+        }
+        renderHistorialSesion();
+      }, (error) => {
+        item.eliminado = true;
+        renderHistorialSesion();
+        if (error === 'DEMO_LIMITE_ALCANZADO') {
+          actualizarEstadoDemo();
+        } else {
+          showToast('⚠️ ' + error, 'error');
+        }
+      }, () => {
+        // Falla de conexión (no de negocio): no se pierde, se encola para
+        // reintentar solo en cuanto vuelva el internet.
+        item.guardando = false;
+        item.esperandoConexion = true;
+        colaOffline.push({ tempId: item.tempId, ubicacion: estanteActual, paquete: { utd: res.utd, guia: res.guia, nombre: '', caracteristicas: '' } });
+        guardarColaOffline();
+        renderHistorialSesion();
+        showToast(`🔌 Sin conexión — el paquete ${res.utd} se guardará solo en cuanto regrese el internet`, 'error');
+      });
+    }
+
+    function mostrarAtencionEscaneo(numeroPaquete, mensaje) {
+      const overlay = document.getElementById('overlayAtencionEscaneo');
+      document.getElementById('overlayAtencionNumero').innerText = numeroPaquete;
+      document.getElementById('overlayAtencionTexto').innerText = mensaje;
+      overlay.style.display = 'flex';
+    }
+
+    function cerrarOverlayAtencion() {
+      const overlay = document.getElementById('overlayAtencionEscaneo');
+      if (overlay) overlay.style.display = 'none';
+    }
+
+    // Toca la tarjeta roja de "guía incompleta" para dejarla armada: el
+    // siguiente escaneo se usa para completarla, en vez de crear un paquete
+    // nuevo. Tocarla de nuevo cancela el modo reintento.
+    function activarReintento(tempId) {
+      tempIdEnReintento = (tempIdEnReintento === tempId) ? null : tempId;
+      renderHistorialSesion();
+      focusInputAcomodar();
+    }
+
+    function manejarReescaneoPendiente(valorCrudo) {
+      const item = historialSesion.find(h => h.tempId === tempIdEnReintento);
+      if (!item) { tempIdEnReintento = null; return; }
+
+      const res = extraerLocal(valorCrudo);
+      if (!res.guia) { showToast('⚠️ Código no reconocido, intenta de nuevo', 'error'); focusInputAcomodar(); return; }
+
+      if (res.guia.length !== LARGO_GUIA_ESPERADO) {
+        item.digitosLeidos = res.guia.length;
+        renderHistorialSesion();
+        showToast(`⚠️ Sigue incompleto (${res.guia.length} de ${LARGO_GUIA_ESPERADO} dígitos) — vuelve a intentar`, 'error');
+        vibrar([50, 40, 50, 40, 50]);
+        focusInputAcomodar();
+        return;
+      }
+
+      const yaEnTiendaPkg = paquetesBase.find(p => p.guia === res.guia);
+      if (yaEnTiendaPkg) {
+        showToast(`⚠️ Ese paquete ya está guardado en ${escapeHtml(yaEnTiendaPkg.ubicacion)} (UTD ${res.utd})`, 'error');
+        vibrar([50, 40, 50, 40, 50]);
+        focusInputAcomodar();
+        return;
+      }
+      const yaEnOtraTarjeta = historialSesion.find(h => h.guia === res.guia && !h.eliminado && h.tempId !== item.tempId);
+      if (yaEnOtraTarjeta) {
+        showToast(`⚠️ Ese paquete ya está en otra tarjeta de esta lista (UTD ${res.utd})`, 'error');
+        vibrar([50, 40, 50, 40, 50]);
+        focusInputAcomodar();
+        return;
+      }
+
+      item.guardando = true;
+      renderHistorialSesion();
+
+      llamar('registrarPaqueteInstantaneo', [item.ubicacion, { utd: res.utd, guia: res.guia, nombre: '', caracteristicas: '' }], data => {
+        item.guardando = false;
+        tempIdEnReintento = null;
+
+        if (data.duplicadoExacto) {
+          item.eliminado = true;
+          showToast(`⚠️ Ese paquete ya estaba guardado en ${escapeHtml(data.ubicacionExistente || '—')} (UTD ${data.utd})`, 'error');
+        } else if (data.requiereNombre) {
+          item.requiereReescaneo = false;
+          item.requiereNombre = true;
+          item.utd = data.utd;
+          item.guia = data.guia;
+          actualizarContadorSesion();
+        } else if (data.guardado) {
+          item.requiereReescaneo = false;
+          item.utd = data.utd;
+          item.guia = data.guia;
+          item.numFila = data.numFila;
+          item.agregadoEn = Date.now();
+          conteoEstantes[item.ubicacion] = (conteoEstantes[item.ubicacion] || 0) + 1;
+          actualizarContadorSesion();
+          renderTablero();
+          showToast('✅ Paquete completado y guardado', 'success');
+        }
+        renderHistorialSesion();
+        focusInputAcomodar();
+      }, (error) => {
+        item.guardando = false;
+        tempIdEnReintento = null;
+        showToast('⚠️ ' + error, 'error');
+        renderHistorialSesion();
+        focusInputAcomodar();
+      }, () => {
+        // Falla de conexión: se encola igual que un escaneo normal.
+        item.guardando = false;
+        item.requiereReescaneo = false;
+        item.esperandoConexion = true;
+        tempIdEnReintento = null;
+        colaOffline.push({ tempId: item.tempId, ubicacion: item.ubicacion, paquete: { utd: res.utd, guia: res.guia, nombre: '', caracteristicas: '' } });
+        guardarColaOffline();
+        renderHistorialSesion();
+        focusInputAcomodar();
+        showToast(`🔌 Sin conexión — el paquete ${res.utd} se guardará solo en cuanto regrese el internet`, 'error');
+      });
+    }
+
+    function completarNombreSesion(tempId, nombreCrudo, caracteristicasCrudo) {
+      const item = historialSesion.find(h => h.tempId === tempId);
+      if (!item || item.guardando) return;
+      const nombre = String(nombreCrudo || '').trim();
+      if (!nombre) { showToast('⚠️ Escribe el nombre del cliente para poder guardarlo', 'error'); return; }
+      const caracteristicas = String(caracteristicasCrudo || '').trim();
+
+      item.guardando = true;
+      renderHistorialSesion();
+
+      llamar('registrarPaqueteInstantaneo', [item.ubicacion, { utd: item.utd, guia: item.guia, nombre, caracteristicas }], data => {
+        item.guardando = false;
+        if (data.guardado) {
+          item.requiereNombre = false;
+          item.nombre = nombre.toUpperCase();
+          item.caracteristicas = caracteristicas.toUpperCase();
+          item.numFila = data.numFila;
+          item.agregadoEn = Date.now();
+          conteoEstantes[item.ubicacion] = (conteoEstantes[item.ubicacion] || 0) + 1;
+          actualizarContadorSesion();
+          renderTablero();
+          showToast('✅ Guardado', 'success');
+        }
+        renderHistorialSesion();
+      }, (error) => {
+        item.guardando = false;
+        showToast('⚠️ ' + error, 'error');
+        renderHistorialSesion();
+      }, () => {
+        // Falla de conexión: se encola igual que un escaneo normal.
+        item.guardando = false;
+        item.requiereNombre = false;
+        item.esperandoConexion = true;
+        colaOffline.push({ tempId: item.tempId, ubicacion: item.ubicacion, paquete: { utd: item.utd, guia: item.guia, nombre, caracteristicas } });
+        guardarColaOffline();
+        renderHistorialSesion();
+        showToast(`🔌 Sin conexión — el paquete ${item.utd} se guardará solo en cuanto regrese el internet`, 'error');
+      });
+    }
+
+    // Nombre y características son editables en cualquier momento después de
+    // guardado (siempre opcionales). Se guarda solo al salir del campo.
+    function actualizarCampoSesion(tempId, campo, valorCrudo) {
+      const item = historialSesion.find(h => h.tempId === tempId);
+      if (!item || !item.numFila) return;
+      const valor = String(valorCrudo || '').trim().toUpperCase();
+      if (item[campo] === valor) return;
+      item[campo] = valor;
+      const args = campo === 'nombre'
+        ? [item.numFila, valor, undefined, undefined]
+        : [item.numFila, undefined, undefined, valor];
+      llamar('editarPaqueteCompleto', args, () => {
+        const pInBase = paquetesBase.find(p => p.numFila === item.numFila);
+        if (pInBase) pInBase[campo] = valor;
+      });
+    }
+
+    // Ctrl+Z: deshace el paquete guardado más recientemente en esta sesión,
+    // sin pedir confirmación (para corregir un error al vuelo, como cualquier
+    // atajo de deshacer). historialSesion siempre tiene el más nuevo primero.
+    function deshacerUltimoEscaneo() {
+      const ultimo = historialSesion.find(h => !h.eliminado && h.numFila && !h.requiereNombre);
+      if (!ultimo) { showToast('No hay nada que deshacer', 'error'); return; }
+      llamar('eliminarPaquete', [ultimo.numFila], () => {
+        ultimo.eliminado = true;
+        conteoEstantes[ultimo.ubicacion] = Math.max(0, (conteoEstantes[ultimo.ubicacion] || 1) - 1);
+        paquetesBase = paquetesBase.filter(p => p.numFila !== ultimo.numFila);
+        actualizarContadorSesion();
+        renderTablero();
+        renderHistorialSesion();
+        filtrarMostrador();
+        showToast(`↩ Deshecho: UTD ${ultimo.utd}`, 'success');
+      });
+    }
+
+    function eliminarItemSesion(tempId) {
+      const item = historialSesion.find(h => h.tempId === tempId);
+      if (!item || item.eliminado) return;
+
+      if (item.requiereNombre || !item.numFila) {
+        // Todavía no se había guardado en la hoja — solo se quita de la vista.
+        item.eliminado = true;
+        if (tempIdEnReintento === tempId) tempIdEnReintento = null;
+        if (item.esperandoConexion) {
+          colaOffline = colaOffline.filter(e => e.tempId !== tempId);
+          guardarColaOffline();
+        }
+        renderHistorialSesion();
+        return;
+      }
+
+      mostrarConfirmacion({
+        icono: '🗑️',
+        titulo: '¿Eliminar este paquete?',
+        texto: `UTD ${item.utd} — esta acción no se puede deshacer.`,
+        textoBoton: 'SÍ, ELIMINAR',
+        onConfirm: () => {
+          llamar('eliminarPaquete', [item.numFila], () => {
+            item.eliminado = true;
+            conteoEstantes[item.ubicacion] = Math.max(0, (conteoEstantes[item.ubicacion] || 1) - 1);
+            paquetesBase = paquetesBase.filter(p => p.numFila !== item.numFila);
+            actualizarContadorSesion();
+            renderTablero();
+            renderHistorialSesion();
+            filtrarMostrador();
+            showToast('🗑️ Paquete eliminado', 'success');
+          });
+        }
+      });
+    }
+
+    function eliminarTodoSesion() {
+      const visibles = historialSesion.filter(h => !h.eliminado);
+      if (visibles.length === 0) { showToast('No hay nada que eliminar en esta lista', 'error'); return; }
+
+      const guardados = visibles.filter(h => h.numFila && !h.requiereNombre);
+
+      mostrarConfirmacion({
+        icono: '🧹',
+        titulo: `¿Eliminar ${visibles.length} paquete(s)?`,
+        texto: 'Es todo lo que ves en la lista de recién escaneado. Esta acción no se puede deshacer.',
+        textoBoton: 'SÍ, ELIMINAR TODO',
+        onConfirm: () => {
+          const limpiarLocal = () => {
+            const tempIdsEnCola = visibles.filter(item => item.esperandoConexion).map(item => item.tempId);
+            if (tempIdsEnCola.length > 0) {
+              colaOffline = colaOffline.filter(e => !tempIdsEnCola.includes(e.tempId));
+              guardarColaOffline();
+            }
+            visibles.forEach(item => { item.eliminado = true; });
+            tempIdEnReintento = null;
+            actualizarContadorSesion();
+            renderTablero();
+            renderHistorialSesion();
+            filtrarMostrador();
+          };
+
+          if (guardados.length === 0) { limpiarLocal(); showToast('🧹 Lista limpiada', 'success'); return; }
+
+          const filas = guardados.map(h => h.numFila);
+          llamar('eliminarPaquetes', [filas], () => {
+            guardados.forEach(item => { conteoEstantes[item.ubicacion] = Math.max(0, (conteoEstantes[item.ubicacion] || 1) - 1); });
+            const setFilas = new Set(filas);
+            paquetesBase = paquetesBase.filter(p => !setFilas.has(p.numFila));
+            limpiarLocal();
+            showToast(`🧹 Se eliminaron ${filas.length} paquete(s)`, 'success');
+          });
+        }
+      });
+    }
+
+    function abrirReubicarSesion(tempId) {
+      const item = historialSesion.find(h => h.tempId === tempId);
+      if (!item || !item.numFila) return;
+      itemReubicandoSesion = item;
+      document.getElementById('reubicarSesionUtdHeader').innerText = item.utd;
+
+      const cont = document.getElementById('gridReubicarSesion');
+      cont.innerHTML = '';
+      estantes.forEach(nombre => {
+        if (nombre === item.ubicacion) return;
+        const btn = document.createElement('div');
+        btn.className = `estante-card ${claseTipoEstante(nombre)}`;
+        btn.innerHTML = `<span class="estante-nombre">${escapeHtml(nombre)}</span>`;
+        btn.onclick = () => confirmarReubicarSesion(nombre);
+        cont.appendChild(btn);
+      });
+      document.getElementById('modalReubicarSesion').style.display = 'flex';
+    }
+
+    function confirmarReubicarSesion(nuevoEstante) {
+      if (!itemReubicandoSesion) return;
+      const item = itemReubicandoSesion;
+      llamar('editarPaqueteCompleto', [item.numFila, undefined, nuevoEstante, undefined], () => {
+        conteoEstantes[item.ubicacion] = Math.max(0, (conteoEstantes[item.ubicacion] || 1) - 1);
+        conteoEstantes[nuevoEstante] = (conteoEstantes[nuevoEstante] || 0) + 1;
+        const pInBase = paquetesBase.find(p => p.numFila === item.numFila);
+        if (pInBase) pInBase.ubicacion = nuevoEstante;
+        item.ubicacion = nuevoEstante;
+        itemReubicandoSesion = null;
+        cerrarModal('modalReubicarSesion');
+        renderTablero();
+        renderHistorialSesion();
+        filtrarMostrador();
+        showToast(`✅ Reubicado a ${nuevoEstante}`, 'success');
+      });
+    }
+
+    function actualizarContadorSesion() {
+      const el = document.getElementById('totalSesionCount');
+      if (el) el.innerText = historialSesion.filter(h => !h.eliminado && !h.requiereNombre && !h.requiereReescaneo && !h.esperandoConexion).length;
+
+      const pendientes = historialSesion.filter(h => !h.eliminado && h.requiereNombre).length;
+      const badgePendientes = document.getElementById('contadorPendientes');
+      if (badgePendientes) {
+        badgePendientes.style.display = pendientes > 0 ? 'inline-flex' : 'none';
+        const num = document.getElementById('totalPendientesCount');
+        if (num) num.innerText = pendientes;
+      }
+      const badgeNavAcomodar = document.getElementById('badgePendientesAcomodar');
+      if (badgeNavAcomodar) {
+        badgeNavAcomodar.style.display = pendientes > 0 ? 'inline' : 'none';
+        badgeNavAcomodar.innerText = pendientes;
+      }
+    }
+
+    function renderHistorialSesion() {
+      const cont = document.getElementById('listaSesionScan');
+      if (!cont) return;
+      const visibles = historialSesion.filter(h => !h.eliminado).slice(0, 40);
+
+      const btnEliminarTodo = document.getElementById('btnEliminarTodoSesion');
+      if (btnEliminarTodo) btnEliminarTodo.style.display = visibles.length > 0 ? 'inline-flex' : 'none';
+
+      if (visibles.length === 0) {
+        cont.innerHTML = `<div class="empty-state"><div class="glyph">📦</div><div class="title">Listo para escanear</div><div class="sub">Elige un estante en el tablero y empieza a pasar los códigos con tu pistola.</div></div>`;
+        return;
+      }
+
+      cont.innerHTML = visibles.map(item => {
+        if (item.esperandoConexion) {
+          return `
+            <div class="card-item scan-card esperando-conexion">
+              <div class="scan-card-header">
+                <span class="numero-tarjeta">#${item.numeroSesion}</span>
+                <span class="utd-tag">${item.utd}</span>
+                <span class="scan-card-instruccion">🔌 Sin conexión — se guardará solo en el estante ${escapeHtml(item.ubicacion)} en cuanto vuelva el internet</span>
+                <button class="btn-move" style="color:#fca5a5; border-color:rgba(239,68,68,.35);" title="Cancelar" onclick="eliminarItemSesion('${item.tempId}')">🗑️</button>
+              </div>
+            </div>`;
+        }
+        if (item.requiereReescaneo) {
+          const enReintento = tempIdEnReintento === item.tempId;
+          return `
+            <div class="card-item scan-card pendiente ${enReintento ? 'armada-reintento' : ''}" onclick="activarReintento('${item.tempId}')" style="cursor:pointer;">
+              <div class="scan-card-header">
+                <span class="numero-tarjeta">#${item.numeroSesion}</span>
+                <span class="utd-tag">${item.utd}</span>
+                <span class="scan-card-alerta">⚠️ Paquete #${item.numeroSesion}: guía incompleta (${item.digitosLeidos} de ${LARGO_GUIA_ESPERADO} dígitos) en ${escapeHtml(item.ubicacion)}</span>
+                <button class="btn-move" style="color:#fca5a5; border-color:rgba(239,68,68,.35);" title="Descartar" onclick="event.stopPropagation(); eliminarItemSesion('${item.tempId}')">🗑️</button>
+              </div>
+              <div class="scan-card-instruccion">${item.guardando ? 'Guardando…' : (enReintento ? '🎯 Lista para recibir el reescaneo — pasa la guía completa ahora' : '👆 Toca esta tarjeta y vuelve a escanear la guía completa')}</div>
+            </div>`;
+        }
+        if (item.requiereNombre) {
+          return `
+            <div class="card-item scan-card pendiente">
+              <div class="scan-card-header">
+                <span class="numero-tarjeta">#${item.numeroSesion}</span>
+                <span class="utd-tag">${item.utd}</span>
+                <span class="scan-card-alerta">⚠️ El paquete ${item.utd} está repetido y requiere nombre (estante ${escapeHtml(item.ubicacion)})</span>
+                <button class="btn-move" style="color:#fca5a5; border-color:rgba(239,68,68,.35);" title="Descartar" onclick="eliminarItemSesion('${item.tempId}')">🗑️</button>
+              </div>
+              <div class="scan-card-campos">
+                <input type="text" class="input-inline" placeholder="NOMBRE CLIENTE (OBLIGATORIO)" id="nombrePend_${item.tempId}" ${item.guardando ? 'disabled' : ''}
+                  onkeypress="if(event.key==='Enter'){completarNombreSesion('${item.tempId}', this.value, document.getElementById('carPend_${item.tempId}').value);}">
+                <input type="text" class="input-inline" placeholder="CARACTERÍSTICAS (opcional)" id="carPend_${item.tempId}" ${item.guardando ? 'disabled' : ''}
+                  onkeypress="if(event.key==='Enter'){completarNombreSesion('${item.tempId}', document.getElementById('nombrePend_${item.tempId}').value, this.value);}">
+              </div>
+              <button class="btn-action" style="width:100%; padding:9px; font-size:11.5px;" ${item.guardando ? 'disabled' : ''}
+                onclick="completarNombreSesion('${item.tempId}', document.getElementById('nombrePend_${item.tempId}').value, document.getElementById('carPend_${item.tempId}').value)">${item.guardando ? 'GUARDANDO…' : 'GUARDAR'}</button>
+            </div>`;
+        }
+        return `
+          <div class="card-item scan-card ${item.guardando ? '' : 'new-flash'}">
+            <div class="scan-card-header">
+              <span class="numero-tarjeta">#${item.numeroSesion}</span>
+              <span class="utd-tag">${item.utd}</span>
+              <span class="item-sub">${item.guardando ? 'Guardando…' : 'Guía ' + item.guia}</span>
+              <div class="ub-badge ${obtenerClaseUbicacionBadge(item.ubicacion)}"><span>${escapeHtml(item.ubicacion)}</span></div>
+              <div class="scan-card-acciones">
+                <button class="btn-move" title="Reubicar" onclick="abrirReubicarSesion('${item.tempId}')">🔀</button>
+                <button class="btn-move" style="color:#fca5a5; border-color:rgba(239,68,68,.35);" title="Eliminar" onclick="eliminarItemSesion('${item.tempId}')">🗑️</button>
+              </div>
+            </div>
+            <div class="scan-card-campos">
+              <input type="text" class="input-inline" placeholder="NOMBRE (opcional)" value="${escapeHtml(item.nombre)}" ${item.guardando ? 'disabled' : ''}
+                onkeypress="if(event.key==='Enter'){this.blur();}"
+                onblur="actualizarCampoSesion('${item.tempId}', 'nombre', this.value)">
+              <input type="text" class="input-inline" placeholder="CARACTERÍSTICAS (opcional)" value="${escapeHtml(item.caracteristicas)}" ${item.guardando ? 'disabled' : ''}
+                onkeypress="if(event.key==='Enter'){this.blur();}"
+                onblur="actualizarCampoSesion('${item.tempId}', 'caracteristicas', this.value)">
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    function diasHabilesEnTienda(fechaStr) {
+      let fecha = new Date(fechaStr);
+      let hoy = new Date();
+      let diasHabiles = 0;
+      while (fecha < hoy) {
+        fecha.setDate(fecha.getDate() + 1);
+        let dayOfWeek = fecha.getDay();
+        if (dayOfWeek !== 0 && dayOfWeek !== 6) diasHabiles++;
+      }
+      return diasHabiles;
+    }
+
+    function esMasDe5DiasHabiles(fechaStr) {
+      return diasHabilesEnTienda(fechaStr) >= 5;
+    }
+
+    function obtenerClaseUbicacionBadge(ubicacionStr) {
+      if (!ubicacionStr) return 'ub-badge-otro';
+      const u = ubicacionStr.trim().toUpperCase();
+      if (u.includes('CAJA')) return 'ub-badge-caja';
+      if (/^[ABCD]/.test(u)) return 'ub-badge-estante';
+      return 'ub-badge-otro';
+    }
+
+    function actualizarColorPillEstante(elemento, nombreEstante) {
+      if (!elemento) return;
+      elemento.classList.remove('pill-estante', 'pill-caja', 'pill-otro');
+      const clase = obtenerClaseUbicacionBadge(nombreEstante);
+      if (clase === 'ub-badge-caja') elemento.classList.add('pill-caja');
+      else if (clase === 'ub-badge-otro') elemento.classList.add('pill-otro');
+      else elemento.classList.add('pill-estante');
+    }
+
+    function claseTipoEstante(nombreEstante) {
+      const clase = obtenerClaseUbicacionBadge(nombreEstante);
+      if (clase === 'ub-badge-caja') return 'tipo-caja';
+      if (clase === 'ub-badge-otro') return 'tipo-otro';
+      return 'tipo-estante';
+    }
+
+    // ---------- BÚSQUEDA TOLERANTE A ERRORES DE DEDO ----------
+    function normalizarTexto(str) {
+      return String(str || '').toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    }
+
+    function distanciaLevenshtein(a, b) {
+      const m = [];
+      for (let i = 0; i <= b.length; i++) m[i] = [i];
+      for (let j = 0; j <= a.length; j++) m[0][j] = j;
+      for (let i = 1; i <= b.length; i++) {
+        for (let j = 1; j <= a.length; j++) {
+          m[i][j] = b.charAt(i - 1) === a.charAt(j - 1)
+            ? m[i - 1][j - 1]
+            : Math.min(m[i - 1][j - 1] + 1, m[i][j - 1] + 1, m[i - 1][j] + 1);
+        }
+      }
+      return m[b.length][a.length];
+    }
+
+    function coincideNombreAproximado(nombre, query) {
+      const nombreNorm = normalizarTexto(nombre);
+      const queryNorm = normalizarTexto(query);
+      if (!queryNorm) return true;
+      if (nombreNorm.includes(queryNorm)) return true;
+
+      const tolerancia = queryNorm.length <= 4 ? 1 : queryNorm.length <= 8 ? 2 : 3;
+      return nombreNorm.split(/\s+/).some(palabra => {
+        if (palabra.length < 2) return false;
+        if (distanciaLevenshtein(palabra, queryNorm) <= tolerancia) return true;
+        const inicio = palabra.slice(0, queryNorm.length);
+        return inicio.length >= 3 && distanciaLevenshtein(inicio, queryNorm) <= 1;
+      });
+    }
+
+    // ---------- BUSCAR (por si no recuerdas dónde acomodaste un paquete) ----------
+    let buscarDebounceTimer = null;
+    let estantesResaltadosBuscar = [];
+    let estanteResaltadoMostrador = null;
+
+    function alEscribirBuscar(valor) {
+      clearTimeout(buscarDebounceTimer);
+      const val = String(valor || '').trim();
+      const cont = document.getElementById('resultadosBuscar');
+      if (!val) {
+        cont.innerHTML = '';
+        estantesResaltadosBuscar = [];
+        renderTableroBuscar();
+        return;
+      }
+      buscarDebounceTimer = setTimeout(() => {
+        llamar('buscarPaquetePorCodigo', [val], data => renderResultadosBuscar(data, val));
+      }, 300);
+    }
+
+    function renderTableroBuscar() {
+      const cont = document.getElementById('tableroEstantesBuscar');
+      if (!cont) return;
+      cont.innerHTML = '';
+
+      if (!estantes || estantes.length === 0) {
+        cont.innerHTML = `<div class="empty-state"><div class="glyph">📍</div><div class="title">No hay estantes configurados</div><div class="sub">Ve a Ajustes para crear tu primer estante.</div></div>`;
+        return;
+      }
+
+      const filas = (layoutEstantes && layoutEstantes.length > 0) ? layoutEstantes : [estantes];
+      const setResaltados = new Set(estantesResaltadosBuscar);
+      filas.forEach(fila => {
+        const filaEl = document.createElement('div');
+        filaEl.className = 'fila-estantes';
+        fila.forEach(nombre => {
+          const key = String(nombre).trim();
+          const cant = conteoEstantes[key] || 0;
+          const sem = calcularSemaforo(cant, key);
+          const tile = document.createElement('div');
+          tile.className = `tile-estante ${sem.clase} ${setResaltados.has(key) ? 'resaltado-encontrado' : ''}`;
+          tile.innerHTML = `<span class="tile-nombre">${escapeHtml(key)}</span><span class="tile-conteo">${cant}</span><div class="tile-status">${sem.texto}</div>`;
+          filaEl.appendChild(tile);
+        });
+        cont.appendChild(filaEl);
+      });
+    }
+
+    function renderTableroMostrador() {
+      const cont = document.getElementById('tableroEstantesMostrador');
+      if (!cont) return;
+      cont.innerHTML = '';
+
+      if (!estantes || estantes.length === 0) {
+        cont.innerHTML = `<div class="empty-state"><div class="glyph">📍</div><div class="title">No hay estantes configurados</div><div class="sub">Ve a Ajustes para crear tu primer estante.</div></div>`;
+        return;
+      }
+
+      const filas = (layoutEstantes && layoutEstantes.length > 0) ? layoutEstantes : [estantes];
+      filas.forEach(fila => {
+        const filaEl = document.createElement('div');
+        filaEl.className = 'fila-estantes';
+        fila.forEach(nombre => {
+          const key = String(nombre).trim();
+          const cant = conteoEstantes[key] || 0;
+          const sem = calcularSemaforo(cant, key);
+          const tile = document.createElement('div');
+          tile.className = `tile-estante ${sem.clase} ${key === estanteResaltadoMostrador ? 'resaltado-encontrado' : ''}`;
+          tile.innerHTML = `<span class="tile-nombre">${escapeHtml(key)}</span><span class="tile-conteo">${cant}</span><div class="tile-status">${sem.texto}</div>`;
+          filaEl.appendChild(tile);
+        });
+        cont.appendChild(filaEl);
+      });
+    }
+
+    function renderResultadosBuscar(data, query) {
+      const cont = document.getElementById('resultadosBuscar');
+      if (!data || data.length === 0) {
+        cont.innerHTML = `<div class="empty-state"><div class="glyph">🧭</div><div class="title">Sin resultados</div><div class="sub">Nada coincide con "${escapeHtml(query || '')}".</div></div>`;
+        estantesResaltadosBuscar = [];
+        renderTableroBuscar();
+        return;
+      }
+
+      // Ilumina en el tablero todos los estantes donde haya un resultado que
+      // sigue "EN TIENDA" — así el usuario ve de un vistazo dónde está.
+      estantesResaltadosBuscar = [...new Set(data.filter(p => p.estatus === ESTADOS.EN_TIENDA && p.ubicacion).map(p => p.ubicacion))];
+      renderTableroBuscar();
+
+      cont.innerHTML = data.map(p => {
+        const fechaEntrada = p.fechaEntrada ? new Date(p.fechaEntrada) : null;
+        const fechaSalida = p.fechaSalida ? new Date(p.fechaSalida) : null;
+        const finReferencia = fechaSalida || new Date();
+        const dias = fechaEntrada ? Math.max(0, Math.round((finReferencia - fechaEntrada) / 86400000)) : null;
+        const fechaTexto = fechaEntrada
+          ? fechaEntrada.toLocaleString('es-MX', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+          : '—';
+
+        let estatusHtml;
+        let vencidoClase = '';
+        const guiaIncompleta = p.guia.length !== LARGO_GUIA_ESPERADO;
+        if (guiaIncompleta) vencidoClase = 'red-alert';
+        if (p.estatus === ESTADOS.EN_TIENDA) {
+          const badgeClase = obtenerClaseUbicacionBadge(p.ubicacion);
+          const vencido = fechaEntrada && esMasDe5DiasHabiles(p.fechaEntrada);
+          if (vencido) vencidoClase = 'red-alert';
+          estatusHtml = `<div class="ub-badge ${badgeClase}"><span class="dot-pulse"></span><span>${escapeHtml(p.ubicacion)}</span></div>${vencido ? '<div style="font-size:10.5px; font-weight:800; color:var(--red); margin-top:5px; text-align:right;">⏰ VENCIDO</div>' : ''}`;
+        } else if (p.estatus === ESTADOS.ENTREGADO) {
+          estatusHtml = `<span style="color:var(--green); font-weight:800; font-size:12px; background:rgba(0,166,80,.15); padding:6px 13px; border-radius:14px; white-space:nowrap;">✓ ENTREGADO</span>`;
+        } else {
+          estatusHtml = `<span style="color:#fca5a5; font-weight:800; font-size:12px; background:rgba(239,68,68,.15); padding:6px 13px; border-radius:14px; white-space:nowrap;">🚛 DEVUELTO</span>`;
+        }
+
+        const notaDias = dias !== null
+          ? (p.estatus === ESTADOS.EN_TIENDA ? `<b>${dias}</b> día${dias === 1 ? '' : 's'} en la agencia` : `estuvo <b>${dias}</b> día${dias === 1 ? '' : 's'} en la agencia`)
+          : '';
+
+        const avisoGuia = guiaIncompleta
+          ? `<div style="font-size:10.5px; font-weight:800; color:var(--red); margin-top:3px;">⚠️ Guía incompleta (${p.guia.length} de ${LARGO_GUIA_ESPERADO} dígitos)</div>`
+          : '';
+
+        const carLimpia = p.caracteristicas ? p.caracteristicas.trim().toUpperCase() : "";
+        const tieneCaracteristicasValidas = carLimpia !== "";
+
+        return `
+          <div class="card-item ${vencidoClase}">
+            <div class="item-info">
+              <span class="utd-tag">${p.utd}</span>
+              <div class="item-text">
+                <div class="item-name">${nombreMostrar(p.nombre)}</div>
+                <div class="item-sub">Guía ${p.guia} · Llegó el ${fechaTexto}</div>
+                ${notaDias ? `<div class="item-sub" style="margin-top:2px;">${notaDias}</div>` : ''}
+                ${avisoGuia}
+                ${tieneCaracteristicasValidas ? `<div class="item-char">${escapeHtml(carLimpia)}</div>` : ''}
+              </div>
+            </div>
+            ${estatusHtml}
+          </div>`;
+      }).join('');
+    }
+
+    function limpiarBusqueda() {
+      document.getElementById('searchInput').value = '';
+      filtrarMostrador();
+      refocusInputMostrador();
+    }
+
+    function ordenarPaquetes(lista) {
+      const copia = [...lista];
+      switch (ordenPreferido) {
+        case 'nombre-za':
+          return copia.sort((a, b) => (b.nombre || '').toLowerCase().localeCompare((a.nombre || '').toLowerCase()));
+        case 'tiempo-desc':
+          return copia.sort((a, b) => new Date(a.fechaEntrada) - new Date(b.fechaEntrada));
+        case 'tiempo-asc':
+          return copia.sort((a, b) => new Date(b.fechaEntrada) - new Date(a.fechaEntrada));
+        case 'utd':
+          return copia.sort((a, b) => a.utd.localeCompare(b.utd));
+        case 'nombre-az':
+        default:
+          return copia.sort((a, b) => (a.nombre || 'ZZZ').toLowerCase().localeCompare((b.nombre || 'ZZZ').toLowerCase()) || a.utd.localeCompare(b.utd));
+      }
+    }
+
+    function densidadEfectiva(cantidad) {
+      if (densidadPreferida !== 'auto') return densidadPreferida;
+      if (cantidad > 40) return 'chica';
+      if (cantidad > 15) return 'mediana';
+      return 'grande';
+    }
+
+    function aplicarDensidad(cantidad) {
+      const densidad = densidadEfectiva(cantidad);
+      document.body.classList.remove('densidad-chica', 'densidad-mediana', 'densidad-grande');
+      document.body.classList.add('densidad-' + densidad);
+      document.querySelectorAll('.densidad-btn').forEach(b => b.classList.toggle('active', b.dataset.densidad === densidadPreferida));
+    }
+
+    function elegirDensidad(valor) {
+      densidadPreferida = valor;
+      localStorage.setItem('densidad_preferida', valor);
+      filtrarMostrador();
+    }
+
+    function cambiarOrden(valor) {
+      ordenPreferido = valor;
+      localStorage.setItem('orden_preferido', valor);
+      filtrarMostrador();
+    }
+
+    function filtrarMostrador() {
+      const raw = document.getElementById('searchInput').value.trim();
+      const q = raw.toLowerCase();
+      document.getElementById('searchClearBtn').style.display = raw ? 'flex' : 'none';
+
+      const cont = document.getElementById('listaMostrador');
+      const contBtns = document.getElementById('btnEntregarTodosCont');
+      cont.innerHTML = ''; contBtns.innerHTML = '';
+
+      if (timerEntregaAuto) { clearTimeout(timerEntregaAuto); timerEntregaAuto = null; }
+
+      const listaOrdenada = ordenarPaquetes(paquetesBase);
+
+      let filtrados = listaOrdenada.filter(p => {
+        if (q === '') return true;
+        if (/^\d+$/.test(q)) {
+          const qUtd = q.padStart(digitosUTD, '0').slice(-digitosUTD);
+          return p.utd === q || p.utd === qUtd || p.guia === q || p.guia.endsWith(q);
+        }
+        const ubiLimpia = p.ubicacion.toLowerCase();
+        if (ubiLimpia === q || ubiLimpia.includes(q)) return true;
+        return coincideNombreAproximado(p.nombre, raw);
+      });
+
+      // Si no hubo ni una coincidencia exacta de UTD, busca números muy
+      // parecidos (1 dígito de diferencia) — para errores de dedo con
+      // teclados "corridos" o teclas vecinas.
+      let busquedaAproximada = false;
+      if (filtrados.length === 0 && /^\d+$/.test(q) && q.length >= 2) {
+        const qUtd = q.padStart(digitosUTD, '0').slice(-digitosUTD);
+        const cercanos = listaOrdenada.filter(p => distanciaLevenshtein(p.utd, qUtd) === 1);
+        if (cercanos.length > 0) { filtrados = cercanos; busquedaAproximada = true; }
+      }
+
+      aplicarDensidad(filtrados.length);
+
+      // Solo ilumina el tablero (y divide la pantalla) cuando la búsqueda deja
+      // UNA sola coincidencia EXACTA — si hay UTD repetidos (2+), no hay
+      // búsqueda, o es una coincidencia aproximada, se queda en una columna
+      // para no confundir ni asumir de más.
+      estanteResaltadoMostrador = (raw.length > 0 && filtrados.length === 1 && !busquedaAproximada) ? filtrados[0].ubicacion : null;
+      const splitCont = document.getElementById('mostradorSplit');
+      if (splitCont) splitCont.classList.toggle('dividido', !!estanteResaltadoMostrador);
+      renderTableroMostrador();
+
+      if (filtrados.length === 0) {
+        cont.innerHTML = paquetesBase.length === 0
+          ? `<div class="empty-state"><div class="glyph">🎉</div><div class="title">¡Todo entregado!</div><div class="sub">Ve a "Acomodar" para registrar la primera entrada del día.</div></div>`
+          : `<div class="empty-state"><div class="glyph">🔎</div><div class="title">Sin resultados</div><div class="sub">Nada coincide con "${escapeHtml(raw)}".</div></div>`;
+        return;
+      }
+
+      if (busquedaAproximada) {
+        cont.innerHTML = `<div class="aviso-aproximado">🔤 No encontramos "${escapeHtml(raw)}" exacto — ¿quisiste decir esto?</div>`;
+      }
+
+      if (q.length >= 2 && filtrados.length === 1 && !busquedaAproximada && !(filtrados[0].utd === utdRechazadoTemporalmente && Date.now() < rechazoHasta)) {
+        paquetePendientePregunta = filtrados[0];
+        timerEntregaAuto = setTimeout(() => {
+          if (document.getElementById('home').classList.contains('active') && paquetePendientePregunta) {
+            document.getElementById('pregUtdHeader').innerText = paquetePendientePregunta.utd;
+            document.getElementById('pregNombreHeader').innerHTML = nombreMostrar(paquetePendientePregunta.nombre);
+            const badgeUb = document.getElementById('pregUbicacionBadge');
+            badgeUb.className = `ub-badge ${obtenerClaseUbicacionBadge(paquetePendientePregunta.ubicacion)}`;
+            document.getElementById('pregUbicacionTexto').innerText = paquetePendientePregunta.ubicacion;
+            document.getElementById('modalPreguntaEntrega').style.display = 'flex';
+          }
+        }, 3500);
+      }
+
+      if (q.length >= 2 && filtrados.length > 1 && !busquedaAproximada) {
+        contBtns.innerHTML = `
+          <div style="display:flex; gap:8px; margin-bottom:12px;">
+            <button class="btn-action" style="flex:1; padding:14px; font-size:13px;" onclick="pedirAccionLote('entregar', ${JSON.stringify(filtrados.map(p => p.numFila))})">📦 ENTREGAR TODOS (${filtrados.length})</button>
+            <button class="btn-action" style="background:var(--red); padding:14px; font-size:13px;" onclick="pedirAccionLote('devolver', ${JSON.stringify(filtrados.map(p => p.numFila))})">🚛 DEVOLVER</button>
+          </div>`;
+      }
+
+      filtrados.forEach(p => {
+        const dias = diasHabilesEnTienda(p.fechaEntrada);
+        const esViejo = dias >= 5;
+        const guiaIncompleta = p.guia.length !== LARGO_GUIA_ESPERADO;
+        const claseAntiguedad = (esViejo || guiaIncompleta) ? 'red-alert' : dias >= 4 ? 'aging-2' : dias >= 2 ? 'aging-1' : '';
+        const item = document.createElement('div');
+        item.className = `card-item ${claseAntiguedad}`;
+        const badgeClase = obtenerClaseUbicacionBadge(p.ubicacion);
+        const carLimpia = p.caracteristicas ? p.caracteristicas.trim().toUpperCase() : "";
+        const tieneCaracteristicasValidas = carLimpia !== "";
+
+        let notaAntiguedad = '';
+        if (esViejo) notaAntiguedad = '<b style="color:var(--red);">· +5 días</b>';
+        else if (dias >= 2) notaAntiguedad = `<b style="color:#f5a623;">· ${dias} días</b>`;
+
+        const avisoGuia = guiaIncompleta
+          ? `<div style="font-size:10.5px; font-weight:800; color:var(--red); margin-top:3px;">⚠️ Guía incompleta (${p.guia.length} de ${LARGO_GUIA_ESPERADO} dígitos) — corrígela con ✏️</div>`
+          : '';
+
+        item.innerHTML = `
+          <div class="item-info">
+            <span class="utd-tag">${p.utd}</span>
+            <div class="item-text">
+              <div class="item-name">${nombreMostrar(p.nombre)}</div>
+              <div class="item-sub">Guía ${p.guia} ${notaAntiguedad}</div>
+              ${avisoGuia}
+              ${tieneCaracteristicasValidas ? `<div class="item-char">${escapeHtml(carLimpia)}</div>` : ''}
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; gap:6px;">
+            <div class="ub-badge ${badgeClase}"><span class="dot-pulse"></span><span>${escapeHtml(p.ubicacion)}</span></div>
+            <button class="btn-action" onclick="entregarDirecto([${p.numFila}])">ENTREGAR</button>
+            ${esViejo ? `<button class="btn-action" style="background:var(--red); padding:10px;" title="Devolver a chofer ML" onclick="devolverChoferML([${p.numFila}])">🚛</button>` : ''}
+            <button class="btn-move" title="Editar" onclick="abrirModalEdicion(${p.numFila})">✏️</button>
+          </div>`;
+        cont.appendChild(item);
+      });
+    }
+
+    function confirmarEntregaDesdeModal() {
+      if (paquetePendientePregunta) { entregarDirecto([paquetePendientePregunta.numFila]); cerrarModal('modalPreguntaEntrega'); }
+    }
+
+    // ---------- CONFIRMACIÓN DE ACCIONES EN LOTE (más de 5 paquetes) ----------
+    let accionLotePendiente = null;
+
+    function pedirAccionLote(tipo, filas) {
+      if (filas.length <= 5) {
+        if (tipo === 'entregar') entregarDirecto(filas); else devolverChoferML(filas);
+        return;
+      }
+      accionLotePendiente = { tipo, filas };
+      const paquetes = paquetesBase.filter(p => filas.includes(p.numFila));
+      const verbo = tipo === 'entregar' ? 'entregar' : 'devolver a chofer ML';
+      document.getElementById('modalConfirmLoteTitulo').innerText = `¿Confirmar ${verbo} ${filas.length} paquetes?`;
+      document.getElementById('modalConfirmLoteResumen').innerHTML = paquetes.map(p =>
+        `• <b style="font-family:var(--font-code);">${p.utd}</b> — ${p.nombre ? escapeHtml(p.nombre) : '<span class="sin-nombre">sin nombre</span>'}`
+      ).join('<br>');
+      const btnConfirmar = document.getElementById('btnConfirmarAccionLote');
+      btnConfirmar.style.background = tipo === 'devolver' ? 'var(--red)' : 'var(--navy)';
+      btnConfirmar.innerText = tipo === 'entregar' ? 'SÍ, ENTREGAR TODOS' : 'SÍ, DEVOLVER TODOS';
+      document.getElementById('modalConfirmLote').style.display = 'flex';
+    }
+
+    function confirmarAccionLote() {
+      if (!accionLotePendiente) return;
+      const { tipo, filas } = accionLotePendiente;
+      cerrarModal('modalConfirmLote');
+      accionLotePendiente = null;
+      if (tipo === 'entregar') entregarDirecto(filas); else devolverChoferML(filas);
+    }
+
+    function entregarDirecto(filas) {
+      if (timerEntregaAuto) clearTimeout(timerEntregaAuto);
+      llamar('marcarEntregados', [filas], () => {
+        document.getElementById('searchInput').value = '';
+        showToast('🎉 Paquete entregado', 'success', filas[0]);
+        vibrar(50);
+        cargarEstantesYDatos();
+        refocusInputMostrador();
+      });
+    }
+
+    function devolverChoferML(filas) {
+      if (timerEntregaAuto) clearTimeout(timerEntregaAuto);
+      llamar('marcarDevueltos', [filas], () => {
+        document.getElementById('searchInput').value = '';
+        showToast('🚛 Marcado como devuelto a chofer ML', 'success');
+        cargarEstantesYDatos();
+        refocusInputMostrador();
+      });
+    }
+
+    function ejecutarDeshacer(numFila) {
+      llamar('deshacerEntrega', [numFila], () => {
+        showToast('↩ Entrega revertida — el paquete volvió a EN TIENDA', 'success');
+        cargarEstantesYDatos();
+        refocusInputMostrador();
+      });
+    }
+
+    function abrirModalEdicion(numFila) {
+      paqueteEditando = paquetesBase.find(p => p.numFila === numFila);
+      if (!paqueteEditando) return;
+
+      estanteEdicionSeleccionado = paqueteEditando.ubicacion;
+      document.getElementById('editUtdHeader').innerText = paqueteEditando.utd;
+      document.getElementById('editNombre').value = paqueteEditando.nombre || '';
+      document.getElementById('editCaracteristicas').value = paqueteEditando.caracteristicas || '';
+
+      const cont = document.getElementById('gridReubicar');
+      cont.innerHTML = '';
+      estantes.forEach(e => {
+        const key = String(e).trim();
+        const btn = document.createElement('div');
+        btn.className = `estante-card ${claseTipoEstante(key)} ${key === estanteEdicionSeleccionado ? 'selected' : ''}`;
+        btn.innerHTML = `<span class="estante-nombre">${escapeHtml(key)}</span>`;
+        btn.onclick = () => {
+          document.querySelectorAll('#gridReubicar .estante-card').forEach(b => b.classList.remove('selected'));
+          btn.classList.add('selected');
+          estanteEdicionSeleccionado = key;
+        };
+        cont.appendChild(btn);
+      });
+
+      document.getElementById('modalEditar').style.display = 'flex';
+    }
+
+    function guardarEdicionCompleta() {
+      if (!paqueteEditando) return;
+      const nom = document.getElementById('editNombre').value;
+      const car = document.getElementById('editCaracteristicas').value;
+      const ubi = estanteEdicionSeleccionado;
+
+      llamar('editarPaqueteCompleto', [paqueteEditando.numFila, nom, ubi, car], () => {
+        cerrarModal('modalEditar');
+        showToast('✅ Cambios guardados', 'success');
+        cargarEstantesYDatos();
+        refocusInputMostrador();
+      });
+    }
+
+    function cerrarModal(id) {
+      document.getElementById(id).style.display = 'none';
+      if (id === 'modalPreguntaEntrega') {
+        if (paquetePendientePregunta) {
+          utdRechazadoTemporalmente = paquetePendientePregunta.utd;
+          rechazoHasta = Date.now() + 60000;
+        }
+        paquetePendientePregunta = null;
+      }
+      if (document.getElementById('home').classList.contains('active')) refocusInputMostrador();
+    }
+  </script>
+</body>
+</html>

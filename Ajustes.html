@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
+
+    :root {
+      --bg: #0a0e1a;
+      --surface: #131a2b;
+      --surface-2: #1a2338;
+      --line: rgba(255,255,255,0.08);
+      --accent: #FFE600;
+      --accent-ink: #171a1f;
+      --navy: #2D3277;
+      --green: #00A650;
+      --red: #ef4444;
+      --text-main: #f4f6fb;
+      --text-muted: #8b95ab;
+      --radius: 14px;
+      --font-ui: 'Plus Jakarta Sans', -apple-system, sans-serif;
+      --font-code: 'Plus Jakarta Sans', -apple-system, sans-serif;
+
+      --shadow-1: 0 1px 2px rgba(15,20,35,.06), 0 1px 3px rgba(15,20,35,.08);
+      --shadow-2: 0 2px 6px rgba(15,20,35,.08), 0 6px 16px rgba(15,20,35,.08);
+      --shadow-3: 0 8px 24px rgba(15,20,35,.14), 0 2px 8px rgba(15,20,35,.10);
+      --shadow-4: 0 16px 40px rgba(15,20,35,.22), 0 4px 12px rgba(15,20,35,.12);
+    }
+    * { box-sizing: border-box; font-family: var(--font-ui); font-variant-numeric: tabular-nums; }
+    body { padding: 16px; background: var(--bg); color: var(--text-main); max-width: 540px; margin: 0 auto; -webkit-font-smoothing: antialiased; }
+
+    .topbar { display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; }
+    .topbar h2 { font-size:18px; margin:0; font-weight:900; letter-spacing:-.2px; }
+    .btn-back { background: var(--surface-2); color: var(--text-main); border:1px solid var(--line); padding:10px 14px; border-radius:9px; font-weight:800; font-size:12.5px; cursor:pointer; }
+
+    .card-section { background: var(--surface); border:1px solid var(--line); padding:18px; border-radius: var(--radius); margin-bottom:16px; box-shadow: var(--shadow-1); transition: box-shadow .18s ease; }
+    .card-section:hover { box-shadow: var(--shadow-2); }
+    .card-section h3 { margin-top:0; color:var(--text-muted); font-size:11px; text-transform:uppercase; letter-spacing:.8px; font-weight:800; }
+    .card-section p.desc { font-size:12.5px; color:var(--text-muted); margin-bottom:14px; line-height:1.5; }
+
+    .btn { background: linear-gradient(180deg, var(--navy) 0%, #262c68 100%); color:#fff; border:none; padding:14px; border-radius:10px; font-weight:800; width:100%; margin-top:8px; cursor:pointer; text-transform:uppercase; font-size:12.5px; letter-spacing:.3px; transition: filter .15s, transform .12s, box-shadow .15s; box-shadow: 0 2px 8px rgba(45,50,119,.3); }
+    .btn:hover { filter: brightness(1.08); box-shadow: 0 4px 14px rgba(45,50,119,.4); }
+    .btn:active { filter:brightness(1.15); transform: scale(.98); }
+    .btn:disabled { opacity:.5; cursor:not-allowed; }
+
+    .item-estante { display:flex; justify-content:space-between; align-items:center; gap:10px; background: var(--surface-2); padding:12px 14px; margin-bottom:8px; border-radius:10px; border:1px solid var(--line); font-weight:700; font-size:14px; font-family: var(--font-code); box-shadow: var(--shadow-1); transition: box-shadow .15s ease; }
+    .item-estante:hover { box-shadow: var(--shadow-2); }
+    .item-estante-nombre { flex:1; }
+    .input-capacidad { width:56px; text-align:center; padding:6px 4px; border-radius:7px; border:1px solid var(--line); background:var(--surface); color:var(--text-main); font-family:var(--font-code); font-weight:800; font-size:13px; }
+    .btn-del { background: rgba(239,68,68,.15); color:#fca5a5; border:1px solid rgba(239,68,68,.35); border-radius:7px; padding:7px 12px; font-weight:800; cursor:pointer; font-family: var(--font-ui); font-size:12px; }
+
+    .input-edit { width:100%; padding:14px; margin-bottom:8px; font-size:14.5px; border:1px solid var(--line); border-radius:10px; background: var(--surface-2); color: var(--text-main); outline:none; font-family: var(--font-code); font-weight:700; box-shadow: inset 0 1px 2px rgba(0,0,0,.1); transition: border-color .15s ease; }
+
+    .switch-demo { position:relative; display:inline-block; width:46px; height:26px; flex-shrink:0; }
+    .switch-demo input { opacity:0; width:0; height:0; }
+    .switch-demo-slider { position:absolute; cursor:pointer; inset:0; background: var(--line); border-radius:26px; transition: background .15s ease; }
+    .switch-demo-slider::before { content:''; position:absolute; height:20px; width:20px; left:3px; bottom:3px; background:#fff; border-radius:50%; transition: transform .15s ease; }
+    .switch-demo input:checked + .switch-demo-slider { background: var(--accent); }
+    .switch-demo input:checked + .switch-demo-slider::before { transform: translateX(20px); background: var(--accent-ink); }
+
+    .pin-lock { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background: var(--bg); z-index:300; padding:20px; }
+    .pin-lock-card { background: var(--surface); border:1px solid var(--line); border-radius:18px; padding:30px 26px; max-width:340px; width:100%; text-align:center; box-shadow: var(--shadow-4); }
+    .pin-lock-card .glyph { font-size:38px; margin-bottom:10px; }
+    .pin-lock-card h3 { margin:0 0 8px; font-size:18px; }
+    .pin-lock-card p { color: var(--text-muted); font-size:13px; line-height:1.5; margin-bottom:16px; }
+    .pin-lock-card .btn { margin-top:4px; }
+    .input-edit:focus { border-color: var(--navy); }
+
+    .empty-mini { text-align:center; padding:18px; color:var(--text-muted); font-size:13px; }
+
+    .toast-container { position:fixed; top:14px; left:50%; transform:translateX(-50%); z-index:999; display:flex; flex-direction:column; gap:8px; width:92%; max-width:440px; pointer-events:none; }
+    .toast { background:var(--surface); border:1px solid var(--line); padding:13px 16px; border-radius:12px; font-size:13.5px; font-weight:700; color:var(--text-main); box-shadow:0 12px 30px rgba(0,0,0,.35); pointer-events:auto; }
+    .toast.toast-error { border-color: rgba(239,68,68,.5); }
+    .toast.toast-success { border-color: rgba(0,166,80,.5); }
+
+    .segmentado { display:flex; background: var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:4px; gap:4px; box-shadow: inset 0 1px 2px rgba(0,0,0,.1); }
+    .segmentado-btn { flex:1; border:none; background:transparent; color:var(--text-muted); font-weight:800; font-size:13px; padding:10px; border-radius:8px; cursor:pointer; transition: background .15s ease, color .15s ease; font-family: var(--font-code); }
+    .segmentado-btn.active { background: var(--accent); color: var(--accent-ink); }
+
+    .modal-overlay { position:fixed; inset:0; background:rgba(4,6,12,.78); backdrop-filter:blur(5px); display:none; justify-content:center; align-items:center; z-index:250; padding:14px; }
+    .modal { background:var(--surface); border:1px solid var(--line); padding:22px; border-radius:18px; width:100%; max-width:420px; color:var(--text-main); box-shadow: var(--shadow-4); }
+    .speech-bubble { border:2px solid var(--accent); border-radius:20px; padding:24px; box-shadow:0 16px 40px rgba(0,0,0,.5); animation: popIn .28s cubic-bezier(.175,.885,.32,1.275); text-align:center; }
+    @keyframes popIn { 0%{transform:scale(.86); opacity:0;} 100%{transform:scale(1); opacity:1;} }
+  </style>
+</head>
+<body>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- PANTALLA DE BLOQUEO (solo aparece si el modo demo tiene PIN configurado) -->
+  <div class="pin-lock" id="pinLock" style="display:none;">
+    <div class="pin-lock-card">
+      <div class="glyph">🔒</div>
+      <h3>Ajustes protegidos</h3>
+      <p>Esta copia está en modo demo. Escribe el PIN para entrar a Ajustes.</p>
+      <input type="password" id="pinLockInput" class="input-edit" placeholder="PIN" autocomplete="off" style="text-align:center; letter-spacing:4px; font-size:20px;">
+      <button class="btn" style="background:var(--navy);" onclick="intentarDesbloquear()">Entrar</button>
+    </div>
+  </div>
+
+  <div id="ajustesContenido" style="display:none;">
+
+  <div class="topbar">
+    <h2>⚙️ Ajustes</h2>
+    <button class="btn-back" onclick="volver()">← Volver a la app</button>
+  </div>
+
+  <!-- PERSONALIZACIÓN -->
+  <div class="card-section">
+    <h3>🎨 Personalización</h3>
+    <p class="desc">Cambia el nombre y los colores de la app. Se aplica a toda la app (laptop y celular) para cualquiera que la use, sin tener que configurar cada dispositivo por separado.</p>
+
+    <label style="font-size:11px; font-weight:800; color:var(--text-muted); display:block; margin-bottom:4px;">NOMBRE DE LA AGENCIA</label>
+    <input type="text" id="nombreMarcaInput" class="input-edit" placeholder="Mi Agencia Mercado Libre" autocomplete="off">
+
+    <div style="display:flex; gap:12px; margin-top:14px;">
+      <div style="flex:1;">
+        <label style="font-size:11px; font-weight:800; color:var(--text-muted); display:block; margin-bottom:6px;">COLOR PRINCIPAL</label>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <input type="color" id="colorAcentoInput" value="#FFE600" style="width:44px; height:38px; border-radius:8px; border:1px solid var(--line); background:none; cursor:pointer; padding:2px;">
+          <input type="text" id="colorAcentoTexto" class="input-edit" style="margin:0;" value="#FFE600" oninput="sincronizarColorTexto('colorAcentoInput', this.value)">
+        </div>
+      </div>
+      <div style="flex:1;">
+        <label style="font-size:11px; font-weight:800; color:var(--text-muted); display:block; margin-bottom:6px;">COLOR SECUNDARIO</label>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <input type="color" id="colorNavyInput" value="#2D3277" style="width:44px; height:38px; border-radius:8px; border:1px solid var(--line); background:none; cursor:pointer; padding:2px;">
+          <input type="text" id="colorNavyTexto" class="input-edit" style="margin:0;" value="#2D3277" oninput="sincronizarColorTexto('colorNavyInput', this.value)">
+        </div>
+      </div>
+    </div>
+
+    <button class="btn" style="background:var(--navy); margin-top:16px;" onclick="guardarPersonalizacion()">💾 Guardar personalización</button>
+    <button class="btn" style="background:var(--surface-2); color:var(--text-main); border:1px solid var(--line);" onclick="restaurarPersonalizacion()">↩️ Restaurar valores originales</button>
+  </div>
+
+  <!-- DÍGITOS DEL UTD -->
+  <div class="card-section">
+    <h3>🔢 Dígitos del UTD</h3>
+    <p class="desc">Con temporada alta y más de 100 paquetes en tienda, vas a tener muchos UTD repetidos usando solo 3 dígitos. Aquí puedes ampliarlo a 4 o 5 dígitos — se aplica a toda la app (laptop y celular) al instante. Los paquetes ya guardados no cambian, solo los que escanees después.</p>
+    <div class="segmentado" id="segmentadoUTD">
+      <button class="segmentado-btn" data-digitos="3" onclick="elegirDigitosUTD(3)">3 DÍGITOS</button>
+      <button class="segmentado-btn" data-digitos="4" onclick="elegirDigitosUTD(4)">4 DÍGITOS</button>
+      <button class="segmentado-btn" data-digitos="5" onclick="elegirDigitosUTD(5)">5 DÍGITOS</button>
+    </div>
+    <p id="estadoDigitosUTD" class="desc" style="margin-top:10px; margin-bottom:0;"></p>
+  </div>
+
+  <!-- VERSIÓN MÓVIL -->
+  <div class="card-section">
+    <h3>📱 Versión para celular</h3>
+    <p class="desc">Una interfaz reducida pensada solo para auditoría de estantes. Sin mostrador ni reportes — ideal para usarse con una mano mientras revisas físicamente la mercancía.</p>
+    <button class="btn" style="background:var(--navy);" onclick="abrirMovil()">📱 Abrir versión móvil</button>
+  </div>
+
+  <!-- ESCÁNER DE CÁMARA -->
+  <div class="card-section">
+    <h3>📷 Escaneo con cámara (avanzado)</h3>
+    <p class="desc">Google bloquea el acceso a la cámara dentro de esta app por seguridad, así que el escaneo con cámara vive en una páginita aparte, alojada gratis en GitHub Pages. Pega aquí la URL una sola vez y todos los celulares que usen la app la tomarán automáticamente.</p>
+    <input type="text" id="urlCamaraInput" class="input-edit" placeholder="https://tu-usuario.github.io/tu-repo/scanner.html" autocomplete="off">
+    <button class="btn" style="background:var(--navy);" onclick="guardarUrlCamara()">💾 Guardar URL del escáner</button>
+    <p id="estadoCamaraTexto" class="desc" style="margin-top:10px; margin-bottom:0;"></p>
+  </div>
+
+  <!-- RESPALDO -->
+  <div class="card-section">
+    <h3>📂 Respaldo y exportación</h3>
+    <p class="desc">Descarga una copia completa de todos los paquetes registrados (incluyendo entregados y devueltos) en un archivo CSV compatible con Excel.</p>
+    <button class="btn" style="background:var(--green);" id="btnExportar" onclick="exportarCSV()">📥 Descargar inventario (CSV)</button>
+  </div>
+
+  <!-- ESTANTES -->
+  <div class="card-section">
+    <h3>📍 Gestión de estantes / bodega</h3>
+    <p class="desc">Estos son los espacios físicos donde acomodas los paquetes. El orden y acomodo del tablero (arrastrar y soltar) se hace directo en la pantalla de "Acomodar" — aquí solo agregas o quitas estantes de la lista.</p>
+    <input type="text" id="nuevoEstanteInput" class="input-edit" placeholder="Nombre de nuevo estante (ej. E1)" autocomplete="off">
+    <button class="btn" onclick="agregarEstante()">+ Agregar estante</button>
+
+    <h4 style="margin-top:18px; margin-bottom:8px; color:var(--text-muted); font-size:11px; text-transform:uppercase; letter-spacing:.6px;">Estantes configurados</h4>
+    <div id="listaEstantesAjuste"></div>
+  </div>
+
+  <!-- MODO DEMO -->
+  <div class="card-section" style="border-color: rgba(255,230,0,.35);">
+    <h3 style="color: var(--accent);">🔒 Modo demo (para prospectos)</h3>
+    <p class="desc">Actívalo solo en las copias que le vas a mostrar a alguien que todavía no compra su propia app. Permite registrar hasta 10 paquetes en total; después bloquea el registro de nuevos y muestra tu contacto para el pago único. No lo actives en tu app real.</p>
+
+    <div style="display:flex; align-items:center; justify-content:space-between; background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:12px 14px; margin-bottom:12px;">
+      <span style="font-weight:800; font-size:13px;">Modo demo activo</span>
+      <label class="switch-demo">
+        <input type="checkbox" id="demoActivoInput" onchange="actualizarVisibilidadDemo()">
+        <span class="switch-demo-slider"></span>
+      </label>
+    </div>
+
+    <div id="demoContactoWrap">
+      <label style="font-size:11px; font-weight:800; color:var(--text-muted); display:block; margin-bottom:4px;">MENSAJE DE CONTACTO PARA EL PROSPECTO</label>
+      <input type="text" id="demoContactoInput" class="input-edit" placeholder="Escríbeme al WhatsApp 662-000-0000 para tu app completa" autocomplete="off">
+
+      <label style="font-size:11px; font-weight:800; color:var(--text-muted); display:block; margin-bottom:4px; margin-top:10px;">PIN PARA PROTEGER ESTOS AJUSTES</label>
+      <input type="text" id="demoPinInput" class="input-edit" placeholder="Ej. 4321 — solo tú lo debes saber" autocomplete="off">
+      <p class="desc" style="margin-top:0; margin-bottom:0; font-size:11.5px;">Mientras el modo demo esté activo, se pedirá este PIN para volver a entrar a Ajustes. Si lo dejas vacío, cualquiera con la liga podría entrar aquí.</p>
+    </div>
+
+    <p id="demoEstadoTexto" class="desc" style="margin-top:6px; margin-bottom:0;"></p>
+
+    <button class="btn" style="background:var(--navy);" onclick="guardarModoDemo()">💾 Guardar modo demo</button>
+    <button class="btn" style="background:var(--surface-2); color:var(--text-main); border:1px solid var(--line);" onclick="reiniciarDemo()">↩️ Reiniciar contador a 0 (nuevo prospecto)</button>
+  </div>
+
+  <!-- LIMPIEZA AUTOMÁTICA -->
+  <div class="card-section">
+    <h3>🧹 Limpieza automática</h3>
+    <p class="desc">Los paquetes ya entregados, devueltos o eliminados no aportan nada al día a día — dejarlos para siempre solo hace la hoja más pesada y lenta. Actívalo para que cada madrugada se borren (de verdad, la fila completa) los que llevan más de <b id="textoDiasRetencion">30</b> días cerrados. Los que están en tienda nunca se tocan.</p>
+
+    <div style="display:flex; align-items:center; justify-content:space-between; background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:12px 14px; margin-bottom:12px;">
+      <span style="font-weight:800; font-size:13px;">Limpieza automática activa</span>
+      <label class="switch-demo">
+        <input type="checkbox" id="limpiezaActivaInput" onchange="cambiarLimpiezaAutomatica(this.checked)">
+        <span class="switch-demo-slider"></span>
+      </label>
+    </div>
+
+    <button class="btn" style="background:var(--navy);" onclick="limpiarAhora()" id="btnLimpiarAhora">🧹 Limpiar ahora (manual)</button>
+    <p id="estadoLimpiezaTexto" class="desc" style="margin-top:10px; margin-bottom:0;"></p>
+  </div>
+
+  <!-- ZONA DE PELIGRO -->
+  <div class="card-section" style="border-color: rgba(239,68,68,.4);">
+    <h3 style="color: var(--red);">🚨 Zona de peligro</h3>
+    <p class="desc">Elimina absolutamente todos los paquetes registrados en tienda. Esta acción no se puede deshacer — descarga un respaldo antes de continuar.</p>
+    <button class="btn" style="background: var(--red);" onclick="vaciarPaquetesSeguridad()">🗑️ Eliminar todos los paquetes</button>
+  </div>
+
+  <p style="text-align:center; font-size:11px; color:var(--text-muted); margin-top:20px;" id="versionTexto">&nbsp;</p>
+
+  </div>
+
+  <!-- MODAL: CONFIRMACIÓN GENÉRICA (reemplaza los confirm() feos del navegador) -->
+  <div class="modal-overlay" id="modalConfirmarGenerico">
+    <div class="modal speech-bubble">
+      <div style="font-size:32px; margin-bottom:6px;" id="confirmGenericoIcono">⚠️</div>
+      <h3 style="margin-top:0; color:var(--text-main); font-size:19px; font-weight:900;" id="confirmGenericoTitulo">¿Confirmar?</h3>
+      <p style="font-size:14px; margin:12px 0 0; color:var(--text-muted); line-height:1.5;" id="confirmGenericoTexto"></p>
+      <div style="display:flex; gap:10px; margin-top:20px;">
+        <button class="btn" style="margin-top:0; background:var(--red);" id="confirmGenericoBtnAceptar" onclick="ejecutarConfirmGenerico()">SÍ, CONTINUAR</button>
+        <button class="btn" style="margin-top:0; background:var(--surface-2); color:var(--text-main); border:1px solid var(--line);" onclick="confirmGenericoCallback=null; cerrarModalAjustes('modalConfirmarGenerico')">CANCELAR</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ZONA DE PELIGRO — requiere escribir CONFIRMAR (misma fricción que antes, pero bonito) -->
+  <div class="modal-overlay" id="modalVaciarTodo">
+    <div class="modal speech-bubble">
+      <div style="font-size:32px; margin-bottom:6px;">🚨</div>
+      <h3 style="margin-top:0; color:var(--red); font-size:19px; font-weight:900;">Esto elimina TODO</h3>
+      <p style="font-size:14px; margin:12px 0 0; color:var(--text-muted); line-height:1.5;">Se borran absolutamente todos los paquetes registrados. No se puede deshacer. Escribe <b style="color:var(--text-main);">CONFIRMAR</b> para continuar.</p>
+      <input type="text" id="inputVaciarConfirmar" class="input-edit" style="text-align:center; margin-top:14px; text-transform:uppercase;" placeholder="CONFIRMAR" autocomplete="off">
+      <div style="display:flex; gap:10px; margin-top:8px;">
+        <button class="btn" style="margin-top:0; background:var(--red);" onclick="ejecutarVaciarTodo()">SÍ, ELIMINAR TODO</button>
+        <button class="btn" style="margin-top:0; background:var(--surface-2); color:var(--text-main); border:1px solid var(--line);" onclick="document.getElementById('inputVaciarConfirmar').value=''; cerrarModalAjustes('modalVaciarTodo')">CANCELAR</button>
+      </div>
+    </div>
+  </div>
+
+  <?!= include('Compartido'); ?>
+  <script>
+    let estantesLocales = [];
+    let capacidadesLocales = {};
+    const CAPACIDAD_ESTANTE_DEFECTO = 10;
+    let confirmGenericoCallback = null;
+
+    window.onload = function() {
+      verificarAcceso();
+      document.getElementById('pinLockInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') { e.preventDefault(); intentarDesbloquear(); }
+      });
+      document.getElementById('inputVaciarConfirmar').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') { e.preventDefault(); ejecutarVaciarTodo(); }
+      });
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
+      });
+    };
+
+    function verificarAcceso() {
+      llamar('validarPinAjustes', [''], data => {
+        if (data.requerido && !data.valido) {
+          document.getElementById('pinLock').style.display = 'flex';
+          setTimeout(() => document.getElementById('pinLockInput').focus(), 100);
+        } else {
+          revelarAjustes();
+        }
+      });
+    }
+
+    function revelarAjustes() {
+      document.getElementById('pinLock').style.display = 'none';
+      document.getElementById('ajustesContenido').style.display = 'block';
+      cargarEstantes();
+      cargarConfigCamara();
+      cargarPersonalizacion();
+      cargarModoDemo();
+      cargarConfigUTD();
+      cargarEstadoLimpieza();
+      llamar('obtenerVersionApp', [], data => {
+        document.getElementById('versionTexto').innerText = `Agencia Mercado Libre Pro · v${data.version}`;
+      });
+    }
+
+    // ---------- MODALES DE CONFIRMACIÓN (reemplazan confirm()/prompt()) ----------
+    function mostrarConfirmacion(opts) {
+      document.getElementById('confirmGenericoIcono').innerText = opts.icono || '⚠️';
+      document.getElementById('confirmGenericoTitulo').innerText = opts.titulo || '¿Confirmar?';
+      document.getElementById('confirmGenericoTexto').innerText = opts.texto || '';
+      const btn = document.getElementById('confirmGenericoBtnAceptar');
+      btn.innerText = opts.textoBoton || 'SÍ, CONTINUAR';
+      btn.style.background = opts.colorBoton || 'var(--red)';
+      confirmGenericoCallback = opts.onConfirm;
+      document.getElementById('modalConfirmarGenerico').style.display = 'flex';
+    }
+
+    function ejecutarConfirmGenerico() {
+      const cb = confirmGenericoCallback;
+      confirmGenericoCallback = null;
+      cerrarModalAjustes('modalConfirmarGenerico');
+      if (cb) cb();
+    }
+
+    function cerrarModalAjustes(id) {
+      document.getElementById(id).style.display = 'none';
+    }
+
+    function intentarDesbloquear() {
+      const pin = document.getElementById('pinLockInput').value.trim();
+      llamar('validarPinAjustes', [pin], data => {
+        if (data.valido) {
+          revelarAjustes();
+        } else {
+          showToast('⚠️ PIN incorrecto', 'error');
+          document.getElementById('pinLockInput').value = '';
+          document.getElementById('pinLockInput').focus();
+        }
+      });
+    }
+
+    function cargarEstantes() {
+      llamar('obtenerEstantesConLayout', [], data => {
+        const layout = (data.layout && data.layout.length > 0) ? data.layout : [data.estantes];
+        estantesLocales = layout.reduce((acc, fila) => acc.concat(fila), []);
+        capacidadesLocales = data.capacidades || {};
+        render();
+      });
+    }
+
+    function render() {
+      const cont = document.getElementById('listaEstantesAjuste');
+      if (estantesLocales.length === 0) {
+        cont.innerHTML = `<div class="empty-mini">Todavía no hay estantes configurados.</div>`;
+        return;
+      }
+      cont.innerHTML = estantesLocales.map((e, idx) => `
+        <div class="item-estante">
+          <span class="item-estante-nombre">📍 ${escapeHtml(e)}</span>
+          <input type="number" class="input-capacidad" min="1" value="${capacidadesLocales[e] || CAPACIDAD_ESTANTE_DEFECTO}" title="Cuántos paquetes aguanta este estante antes de considerarse lleno" onchange="cambiarCapacidad('${e}', this.value)">
+          <button class="btn-del" onclick="borrar(${idx})">Eliminar</button>
+        </div>`).join('');
+    }
+
+    function cambiarCapacidad(nombre, valor) {
+      const cap = parseInt(valor, 10);
+      if (!cap || cap < 1) { showToast('⚠️ La capacidad debe ser mayor a 0', 'error'); render(); return; }
+      llamar('guardarCapacidadEstante', [nombre, cap], () => {
+        capacidadesLocales[nombre] = cap;
+        showToast(`✅ ${nombre} ahora aguanta ${cap} paquetes`, 'success');
+      });
+    }
+
+    function agregarEstante() {
+      const input = document.getElementById('nuevoEstanteInput');
+      const val = input.value.trim().toUpperCase();
+      if (!val) { showToast('⚠️ Escribe un nombre para el estante', 'error'); return; }
+      if (estantesLocales.includes(val)) { showToast('⚠️ Ese estante ya existe', 'error'); return; }
+      estantesLocales.push(val);
+      guardarCambios(() => { input.value = ''; showToast(`✅ Estante ${val} agregado`, 'success'); });
+    }
+
+    function borrar(idx) {
+      const nombre = estantesLocales[idx];
+      mostrarConfirmacion({
+        icono: '📍',
+        titulo: `¿Eliminar el estante "${nombre}"?`,
+        texto: 'Los paquetes que ya tengan esa ubicación no se moverán, solo se quita de la lista de estantes.',
+        textoBoton: 'SÍ, ELIMINAR',
+        onConfirm: () => {
+          estantesLocales.splice(idx, 1);
+          guardarCambios(() => showToast(`Estante ${nombre} eliminado`, 'success'));
+        }
+      });
+    }
+
+    function guardarCambios(onOk) {
+      llamar('guardarEstantes', [estantesLocales], () => { cargarEstantes(); if (onOk) onOk(); });
+    }
+
+    function exportarCSV() {
+      const btn = document.getElementById('btnExportar');
+      btn.disabled = true; btn.innerText = 'Generando archivo…';
+      llamar('obtenerCSVExportacion', [], csvContent => {
+        btn.disabled = false; btn.innerText = '📥 Descargar inventario (CSV)';
+        const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", `Inventario_Agencia_ML_${new Date().toISOString().slice(0,10)}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        showToast('✅ Descarga iniciada', 'success');
+      });
+    }
+
+    function vaciarPaquetesSeguridad() {
+      document.getElementById('inputVaciarConfirmar').value = '';
+      document.getElementById('modalVaciarTodo').style.display = 'flex';
+      setTimeout(() => document.getElementById('inputVaciarConfirmar').focus(), 100);
+    }
+
+    function ejecutarVaciarTodo() {
+      const val = document.getElementById('inputVaciarConfirmar').value.trim().toUpperCase();
+      if (val !== 'CONFIRMAR') {
+        showToast('⚠️ Escribe exactamente "CONFIRMAR" para continuar', 'error');
+        return;
+      }
+      llamar('vaciarTodosLosPaquetes', [], () => {
+        cerrarModalAjustes('modalVaciarTodo');
+        showToast('✅ Se eliminaron todos los paquetes', 'success');
+      });
+    }
+
+    function volver() { window.open("<?= ScriptApp.getService().getUrl() ?>?page=Index", "_top"); }
+    function abrirMovil() { window.open("<?= ScriptApp.getService().getUrl() ?>?page=Movil", "_top"); }
+
+    function sincronizarColorTexto(idColorPicker, valorTexto) {
+      const limpio = valorTexto.trim();
+      if (/^#[0-9A-Fa-f]{6}$/.test(limpio)) {
+        document.getElementById(idColorPicker).value = limpio;
+      }
+    }
+
+    document.addEventListener('input', function(e) {
+      if (e.target && e.target.id === 'colorAcentoInput') document.getElementById('colorAcentoTexto').value = e.target.value;
+      if (e.target && e.target.id === 'colorNavyInput') document.getElementById('colorNavyTexto').value = e.target.value;
+    });
+
+    function cargarPersonalizacion() {
+      llamar('obtenerConfigMarca', [], data => {
+        document.getElementById('nombreMarcaInput').value = data.nombre;
+        document.getElementById('colorAcentoInput').value = data.colorAcento;
+        document.getElementById('colorAcentoTexto').value = data.colorAcento;
+        document.getElementById('colorNavyInput').value = data.colorNavy;
+        document.getElementById('colorNavyTexto').value = data.colorNavy;
+      });
+    }
+
+    function guardarPersonalizacion() {
+      const nombre = document.getElementById('nombreMarcaInput').value.trim();
+      const colorAcento = document.getElementById('colorAcentoInput').value;
+      const colorNavy = document.getElementById('colorNavyInput').value;
+
+      llamar('guardarConfigMarca', [nombre, colorAcento, colorNavy], data => {
+        document.getElementById('nombreMarcaInput').value = data.nombre;
+        document.getElementById('colorAcentoInput').value = data.colorAcento;
+        document.getElementById('colorAcentoTexto').value = data.colorAcento;
+        document.getElementById('colorNavyInput').value = data.colorNavy;
+        document.getElementById('colorNavyTexto').value = data.colorNavy;
+        showToast('✅ Personalización guardada — recarga el Mostrador para verla aplicada', 'success');
+      });
+    }
+
+    function restaurarPersonalizacion() {
+      mostrarConfirmacion({
+        icono: '🎨',
+        titulo: '¿Restaurar valores originales?',
+        texto: 'Regresa el nombre y los colores a los que trae la app por defecto.',
+        textoBoton: 'SÍ, RESTAURAR',
+        colorBoton: 'var(--navy)',
+        onConfirm: () => {
+          // Al mandar vacío, el backend usa su propio valor por defecto (una sola fuente de verdad).
+          llamar('guardarConfigMarca', ['', '', ''], data => {
+            document.getElementById('nombreMarcaInput').value = data.nombre;
+            document.getElementById('colorAcentoInput').value = data.colorAcento;
+            document.getElementById('colorAcentoTexto').value = data.colorAcento;
+            document.getElementById('colorNavyInput').value = data.colorNavy;
+            document.getElementById('colorNavyTexto').value = data.colorNavy;
+            showToast('↩️ Se restauraron los valores originales', 'success');
+          });
+        }
+      });
+    }
+
+    // ---------- DÍGITOS DEL UTD ----------
+    function cargarConfigUTD() {
+      llamar('obtenerConfigUTD', [], data => pintarSegmentadoUTD(data.digitos));
+    }
+
+    function pintarSegmentadoUTD(digitos) {
+      document.querySelectorAll('#segmentadoUTD .segmentado-btn').forEach(b => {
+        b.classList.toggle('active', parseInt(b.dataset.digitos, 10) === digitos);
+      });
+      document.getElementById('estadoDigitosUTD').innerText = `Actualmente usando los últimos ${digitos} dígitos de la guía como UTD.`;
+    }
+
+    function elegirDigitosUTD(digitos) {
+      llamar('guardarConfigUTD', [digitos], data => {
+        pintarSegmentadoUTD(data.digitos);
+        showToast(`✅ UTD ahora usa ${data.digitos} dígitos`, 'success');
+      });
+    }
+
+    // ---------- LIMPIEZA AUTOMÁTICA ----------
+    function cargarEstadoLimpieza() {
+      llamar('obtenerEstadoLimpiezaAutomatica', [], data => {
+        document.getElementById('limpiezaActivaInput').checked = data.activo;
+        document.getElementById('textoDiasRetencion').innerText = data.diasRetencion;
+        pintarEstadoLimpieza(data.activo);
+      });
+    }
+
+    function pintarEstadoLimpieza(activo) {
+      const el = document.getElementById('estadoLimpiezaTexto');
+      el.innerText = activo
+        ? 'Activa — corre sola todos los días a las 3:00 am.'
+        : 'Apagada — los paquetes cerrados se quedan en la hoja hasta que los borres manualmente.';
+    }
+
+    function cambiarLimpiezaAutomatica(activar) {
+      const fn = activar ? 'instalarLimpiezaAutomatica' : 'desinstalarLimpiezaAutomatica';
+      llamar(fn, [], data => {
+        pintarEstadoLimpieza(data.activo);
+        showToast(activar ? '✅ Limpieza automática activada' : '✅ Limpieza automática desactivada', 'success');
+      });
+    }
+
+    function limpiarAhora() {
+      const btn = document.getElementById('btnLimpiarAhora');
+      btn.disabled = true; btn.innerText = 'Limpiando…';
+      llamar('ejecutarLimpiezaManual', [], data => {
+        btn.disabled = false; btn.innerText = '🧹 Limpiar ahora (manual)';
+        showToast(data.eliminados > 0 ? `✅ Se eliminaron ${data.eliminados} registro(s) antiguos` : '✅ No había nada que limpiar todavía', 'success');
+      });
+    }
+
+    function actualizarVisibilidadDemo() {
+      const activo = document.getElementById('demoActivoInput').checked;
+      document.getElementById('demoContactoWrap').style.display = activo ? 'block' : 'none';
+    }
+
+    function cargarModoDemo() {
+      llamar('obtenerConfigDemo', [], data => {
+        document.getElementById('demoActivoInput').checked = data.activo;
+        document.getElementById('demoContactoInput').value = data.contacto;
+        document.getElementById('demoPinInput').value = '';
+        document.getElementById('demoPinInput').placeholder = data.pinConfigurado
+          ? 'Ya hay un PIN guardado — escribe uno nuevo para cambiarlo'
+          : 'Ej. 4321 — solo tú lo debes saber';
+        actualizarVisibilidadDemo();
+        pintarEstadoDemo(data);
+      });
+    }
+
+    function pintarEstadoDemo(data) {
+      const el = document.getElementById('demoEstadoTexto');
+      if (!data.activo) { el.innerText = 'Modo demo apagado — esta copia funciona sin límite.'; return; }
+      const proteccion = data.pinConfigurado ? 'protegido con PIN' : 'SIN PIN — cualquiera con la liga puede entrar a Ajustes';
+      el.innerText = `Van ${data.registrados} de ${data.limite} paquetes registrados en esta demo. Ajustes: ${proteccion}.`;
+    }
+
+    function guardarModoDemo() {
+      const activo = document.getElementById('demoActivoInput').checked;
+      const contacto = document.getElementById('demoContactoInput').value.trim();
+      const pin = document.getElementById('demoPinInput').value.trim();
+
+      if (activo && !contacto) {
+        showToast('⚠️ Escribe un mensaje de contacto antes de activar el modo demo', 'error');
+        return;
+      }
+
+      llamar('guardarConfigDemo', [activo, contacto, pin], () => {
+        showToast(activo ? '✅ Modo demo activado' : '✅ Modo demo desactivado', 'success');
+        cargarModoDemo();
+      });
+    }
+
+    function reiniciarDemo() {
+      mostrarConfirmacion({
+        icono: '🔒',
+        titulo: '¿Reiniciar el contador de la demo?',
+        texto: 'Úsalo cuando vayas a mostrarle la app a un nuevo prospecto.',
+        textoBoton: 'SÍ, REINICIAR',
+        colorBoton: 'var(--navy)',
+        onConfirm: () => {
+          llamar('reiniciarContadorDemo', [], () => {
+            showToast('✅ Contador reiniciado a 0', 'success');
+            cargarModoDemo();
+          });
+        }
+      });
+    }
+
+    function cargarConfigCamara() {
+      llamar('obtenerConfigCamara', [], data => {
+        document.getElementById('urlCamaraInput').value = data.url || '';
+        actualizarEstadoCamaraTexto(data.url);
+      });
+    }
+
+    function actualizarEstadoCamaraTexto(url) {
+      const el = document.getElementById('estadoCamaraTexto');
+      el.innerText = url ? '✅ Escaneo con cámara activo para toda la app.' : 'Todavía no está configurado — el botón de cámara en la app móvil mostrará instrucciones mientras tanto.';
+    }
+
+    function guardarUrlCamara() {
+      const val = document.getElementById('urlCamaraInput').value.trim();
+      llamar('guardarConfigCamara', [val], data => {
+        actualizarEstadoCamaraTexto(data.url);
+        showToast(data.url ? '✅ URL del escáner guardada' : '✅ Se quitó la URL del escáner', 'success');
+      });
+    }
+  </script>
+</body>
+</html>

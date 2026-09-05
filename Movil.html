@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
+
+    :root {
+      --bg: #0a0e1a;
+      --surface: #131a2b;
+      --surface-2: #1a2338;
+      --line: rgba(255,255,255,0.08);
+      --accent: #FFE600;
+      --accent-ink: #171a1f;
+      --navy: #2D3277;
+      --green: #00A650;
+      --warning: #f5a623;
+      --red: #ef4444;
+      --text-main: #f4f6fb;
+      --text-muted: #8b95ab;
+      --radius: 14px;
+      --font-ui: 'Plus Jakarta Sans', -apple-system, sans-serif;
+      --font-code: 'Plus Jakarta Sans', -apple-system, sans-serif;
+
+      --shadow-1: 0 1px 2px rgba(15,20,35,.06), 0 1px 3px rgba(15,20,35,.08);
+      --shadow-2: 0 2px 6px rgba(15,20,35,.08), 0 6px 16px rgba(15,20,35,.08);
+      --shadow-3: 0 8px 24px rgba(15,20,35,.14), 0 2px 8px rgba(15,20,35,.10);
+      --shadow-4: 0 16px 40px rgba(15,20,35,.22), 0 4px 12px rgba(15,20,35,.12);
+    }
+
+    body.light-theme {
+      --shadow-1: 0 1px 2px rgba(30,40,70,.05), 0 1px 3px rgba(30,40,70,.06);
+      --shadow-2: 0 2px 6px rgba(30,40,70,.06), 0 6px 18px rgba(30,40,70,.08);
+      --shadow-3: 0 10px 26px rgba(30,40,70,.10), 0 2px 8px rgba(30,40,70,.06);
+      --shadow-4: 0 18px 44px rgba(30,40,70,.16), 0 4px 14px rgba(30,40,70,.08);
+    }
+
+    body.light-theme {
+      --bg: #eef1f8;
+      --surface: #ffffff;
+      --surface-2: #f4f6fb;
+      --line: #e2e6f0;
+      --accent-ink: #171a1f;
+      --text-main: #12172a;
+      --text-muted: #626c85;
+    }
+
+    * { box-sizing: border-box; font-family: var(--font-ui); font-variant-numeric: tabular-nums; }
+    html { -webkit-tap-highlight-color: transparent; }
+    body { margin: 0; padding: 0; background: var(--bg); color: var(--text-main); -webkit-font-smoothing: antialiased; transition: background .25s, color .25s; padding-bottom: 30px; }
+
+    ::selection { background: var(--accent); color: var(--accent-ink); }
+
+    /* ---------- NAV ---------- */
+    .topbar { display:flex; align-items:center; gap:8px; padding:10px 12px; background: var(--surface); border-bottom:1px solid var(--line); position: sticky; top:0; z-index:100; box-shadow: var(--shadow-2); }
+    .brand { display:flex; align-items:center; gap:8px; font-weight:900; font-size:13px; letter-spacing:.2px; color: var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:150px; padding-right:6px; }
+    @media (min-width:640px) { .brand { max-width:none; font-size:13.5px; } }
+    .brand-chip { width:10px; height:10px; border-radius:3px; background: var(--accent); box-shadow:0 0 0 3px rgba(255,230,0,.15); flex-shrink:0; }
+    .conn-dot { width:7px; height:7px; border-radius:50%; background: var(--green); flex-shrink:0; }
+    .conn-dot.off { background: var(--red); animation: blinkDot 1s infinite; }
+    @keyframes blinkDot { 50% { opacity:.3; } }
+
+    .icon-btn { padding:8px 10px; background: var(--surface-2); border:1px solid var(--line); border-radius:9px; font-size:14px; cursor:pointer; color:var(--text-main); flex-shrink:0; transition: transform .22s cubic-bezier(.34,1.56,.64,1); -webkit-tap-highlight-color: transparent; }
+    .icon-btn:active { transform: scale(.88); transition: transform .06s ease; }
+
+    .reloj-topbar { display:flex; flex-direction:column; align-items:flex-end; line-height:1.15; margin-right:4px; flex-shrink:0; }
+    .reloj-hora { font-weight:900; font-family:var(--font-code); font-size:12px; color:var(--text-main); letter-spacing:.3px; }
+    .reloj-fecha { font-size:9px; font-weight:700; color:var(--text-muted); text-transform:capitalize; }
+    @media (max-width:360px) { .reloj-topbar { display:none; } }
+
+    .container { padding:14px; max-width: 960px; margin:0 auto; }
+
+    /* ---------- HEADER ---------- */
+    .header-bar { display:flex; justify-content:space-between; align-items:center; background:var(--surface); border:1px solid var(--line); padding:12px 16px; border-radius:var(--radius); margin-bottom:12px; }
+    .header-title { font-size:11px; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:.8px; }
+    .header-count { font-size:20px; font-weight:900; color:var(--text-main); font-family: var(--font-code); }
+
+    /* ---------- EMPTY STATE ---------- */
+    .empty-state { text-align:center; padding:44px 20px; color:var(--text-muted); }
+    .empty-state .glyph { font-size:34px; margin-bottom:10px; opacity:.8; }
+    .empty-state .title { font-weight:800; color:var(--text-main); font-size:15px; margin-bottom:4px; }
+    .empty-state .sub { font-size:13px; }
+
+    /* ---------- CARDS ---------- */
+    .card-list { display:flex; flex-direction:column; gap:9px; }
+    .card-item { display:flex; align-items:center; justify-content:space-between; gap:10px; background:var(--surface); border:1px solid var(--line); padding:12px 14px; border-radius:var(--radius); box-shadow: var(--shadow-1); transition: transform .16s cubic-bezier(.22,1,.36,1), box-shadow .16s ease, border-color .12s, background .12s; }
+    .card-item.audit-ok { border-color:rgba(0,166,80,.55); box-shadow: inset 3px 0 0 var(--green); }
+    .card-item.audit-missing { border-color:rgba(239,68,68,.55); box-shadow: inset 3px 0 0 var(--red); }
+    .card-item.modo-rapido-tocable { cursor:pointer; }
+    .card-item.modo-rapido-tocable:active { transform: scale(.985); }
+
+    .item-info { display:flex; align-items:center; gap:12px; flex:1; min-width:0; }
+    .utd-tag { font-family: var(--font-code); font-size:16px; font-weight:800; color: var(--navy); background: rgba(77,124,254,.12); padding:7px 9px; border-radius:8px; white-space:nowrap; letter-spacing:.5px; }
+    body.light-theme .utd-tag { color:#26307a; }
+    body:not(.light-theme) .utd-tag { color:#8fb0ff; background: rgba(77,124,254,.16); }
+
+    .item-text { min-width:0; flex:1; }
+    .item-name { font-size:16px; font-weight:800; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; letter-spacing:-.2px; }
+    .item-name .sin-nombre { font-style: italic; font-weight:600; color: var(--text-muted); }
+    .item-sub { font-size:12px; font-weight:600; color:var(--text-muted); font-family: var(--font-code); margin-top:2px; }
+
+    .btn-action { background: linear-gradient(180deg, var(--navy) 0%, #262c68 100%); color:#fff; border:none; padding:10px 15px; border-radius:9px; font-weight:800; font-size:12.5px; cursor:pointer; white-space:nowrap; transition: filter .12s ease, transform .16s cubic-bezier(.34,1.56,.64,1), box-shadow .16s ease; letter-spacing:.2px; -webkit-tap-highlight-color: transparent; box-shadow: 0 2px 6px rgba(45,50,119,.35), 0 1px 2px rgba(0,0,0,.1); }
+    .btn-action:active { filter:brightness(1.15); transform: scale(.94); transition: filter .08s ease, transform .06s ease; }
+    .btn-move { background:var(--surface-2); color:var(--text-muted); border:1px solid var(--line); padding:9px 10px; border-radius:9px; cursor:pointer; transition: background .15s ease, transform .16s cubic-bezier(.34,1.56,.64,1); }
+    .btn-move:hover { background: var(--line); }
+    .btn-move:active { transform: scale(.92); }
+
+    /* ---------- ESTANTES ---------- */
+    .estante-status { font-size:9.5px; font-weight:800; letter-spacing:.4px; text-transform:uppercase; margin-top:2px; opacity:.85; }
+    .estante-card.sem-verde .estante-status { color: var(--green); }
+    .estante-card.sem-amarillo .estante-status { color: #f5a623; }
+    .estante-card.sem-rojo .estante-status { color: #fca5a5; }
+
+    .grid-estantes { display:grid; grid-template-columns:repeat(2,1fr); gap:9px; margin-bottom:16px; }
+    @media (min-width:600px) { .grid-estantes { grid-template-columns:repeat(3,1fr); } }
+
+    .resumen-estante-compacto { display:none; align-items:center; justify-content:space-between; background: var(--surface); border:2px solid var(--line); border-radius:var(--radius); padding:13px 16px; margin-bottom:16px; }
+    .resumen-estante-compacto.show { display:flex; }
+    .resumen-estante-compacto.sem-verde { border-color: rgba(0,166,80,.45); }
+    .resumen-estante-compacto.sem-amarillo { border-color: rgba(245,166,35,.6); }
+    .resumen-estante-compacto.sem-rojo { border-color: rgba(239,68,68,.65); }
+    .resumen-estante-info { display:flex; align-items:center; gap:12px; }
+    .resumen-estante-info .estante-nombre { font-size:18px; }
+    .btn-cambiar-estante { background: var(--surface-2); border:1px solid var(--line); color:var(--text-main); font-weight:800; font-size:11.5px; padding:9px 15px; border-radius:9px; cursor:pointer; transition: transform .22s cubic-bezier(.34,1.56,.64,1); -webkit-tap-highlight-color: transparent; }
+    .btn-cambiar-estante:active { transform: scale(.92); transition: transform .06s ease; }
+
+    .estante-card { display:flex; justify-content:space-between; align-items:center; padding:14px 15px; border-radius:var(--radius); border:2px solid var(--line); cursor:pointer; transition: border-color .15s ease, background .15s ease, box-shadow .15s ease, transform .22s cubic-bezier(.34,1.56,.64,1); background: var(--surface); box-shadow: var(--shadow-1); -webkit-tap-highlight-color: transparent; }
+    .estante-card:active { transform: scale(.96); transition: transform .06s ease; }
+    .estante-nombre { font-size:15px; font-weight:900; color:var(--text-main); font-family: var(--font-code); }
+    .estante-count-badge { font-size:12px; font-weight:800; padding:4px 10px; border-radius:20px; font-family: var(--font-code); }
+
+    .estante-card.sem-verde { border-color: rgba(0,166,80,.35); }
+    .estante-card.sem-verde .estante-count-badge { background: rgba(0,166,80,.15); color: var(--green); }
+    .estante-card.sem-amarillo { border-color: rgba(245,166,35,.5); }
+    .estante-card.sem-amarillo .estante-count-badge { background: rgba(245,166,35,.2); color:#f5a623; }
+    .estante-card.sem-rojo { border-color: rgba(239,68,68,.55); background: rgba(239,68,68,.06); }
+    .estante-card.sem-rojo .estante-count-badge { background: rgba(239,68,68,.2); color:#fca5a5; }
+    .estante-card.selected { border-color: var(--accent) !important; box-shadow: 0 0 0 3px rgba(255,230,0,.18); }
+
+    /* ---------- SCAN ---------- */
+    .scan-container { display:flex; gap:8px; margin-bottom:12px; }
+    .scan-input { flex:1; padding:16px; font-size:16px; font-weight:700; font-family: var(--font-code); border:2px dashed var(--navy); border-radius:var(--radius); text-align:center; background: rgba(77,124,254,.05); color:var(--text-main); outline:none; box-shadow: var(--shadow-1); }
+    .scan-input:focus { border-style: solid; }
+
+    .btn-camara { width:100%; display:flex; align-items:center; justify-content:center; gap:8px; background: var(--surface-2); border:1px dashed var(--line); color:var(--text-main); font-weight:800; font-size:13px; padding:12px; border-radius:var(--radius); cursor:pointer; margin-bottom:12px; transition: transform .22s cubic-bezier(.34,1.56,.64,1), background .15s ease; -webkit-tap-highlight-color: transparent; }
+    .btn-camara:hover { background: var(--line); }
+    .btn-camara:active { transform: scale(.97); transition: transform .06s ease; }
+
+    /* ---------- MODO RÁPIDO (switch) ---------- */
+    .switch-demo { position:relative; display:inline-block; width:46px; height:26px; flex-shrink:0; }
+    .switch-demo input { opacity:0; width:0; height:0; }
+    .switch-demo-slider { position:absolute; cursor:pointer; inset:0; background: var(--line); border-radius:26px; transition: background .15s ease; }
+    .switch-demo-slider::before { content:''; position:absolute; height:20px; width:20px; left:3px; bottom:3px; background:#fff; border-radius:50%; transition: transform .15s ease; }
+    .switch-demo input:checked + .switch-demo-slider { background: var(--accent); }
+    .switch-demo input:checked + .switch-demo-slider::before { transform: translateX(20px); background: var(--accent-ink); }
+    .modo-rapido-hint { font-size:11px; color:var(--text-muted); margin: -6px 0 12px 2px; }
+
+    /* ---------- TOASTS ---------- */
+    .toast-container { position:fixed; top:14px; left:50%; transform:translateX(-50%); z-index:999; display:flex; flex-direction:column; gap:8px; width:92%; max-width:440px; pointer-events:none; }
+    .toast { background:var(--surface); border:1px solid var(--line); padding:13px 16px; border-radius:12px; font-size:13.5px; font-weight:700; color:var(--text-main); box-shadow:0 12px 30px rgba(0,0,0,.35); display:flex; align-items:center; justify-content:space-between; gap:10px; animation: slideDown .28s cubic-bezier(.175,.885,.32,1.275); pointer-events:auto; }
+    .toast.toast-error { border-color: rgba(239,68,68,.5); }
+    .toast.toast-success { border-color: rgba(0,166,80,.5); }
+    @keyframes slideDown { from{opacity:0; transform:translateY(-14px);} to{opacity:1; transform:translateY(0);} }
+
+    /* ---------- MODALS ---------- */
+    .modal-overlay { position:fixed; inset:0; background:rgba(4,6,12,.78); backdrop-filter:blur(5px); display:none; justify-content:center; align-items:center; z-index:200; padding:14px; }
+    .modal { background:var(--surface); border:1px solid var(--line); padding:22px; border-radius:18px; width:100%; max-width:440px; color:var(--text-main); box-shadow: var(--shadow-4); }
+
+    /* ---------- TOUR ---------- */
+    .tour-overlay { position:fixed; inset:0; z-index:500; }
+    .tour-spotlight { position:fixed; border-radius:14px; box-shadow: 0 0 0 9999px rgba(4,6,12,.82); transition: top .35s cubic-bezier(.22,1,.36,1), left .35s cubic-bezier(.22,1,.36,1), width .35s ease, height .35s ease; pointer-events:none; border:2px solid var(--accent); top:-100px; left:-100px; width:10px; height:10px; }
+    .tour-tooltip { position:fixed; background: var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:16px; width:calc(100% - 32px); max-width:300px; box-shadow:0 16px 40px rgba(0,0,0,.5); z-index:501; transition: top .35s ease, left .35s ease; top:-300px; left:16px; }
+    .tour-tooltip-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+    .tour-tooltip-header span { font-size:11px; font-weight:800; color:var(--text-muted); }
+    .tour-skip { background:none; border:none; color:var(--text-muted); font-size:11px; font-weight:800; cursor:pointer; padding:2px; }
+    .tour-tooltip-titulo { font-size:15px; font-weight:900; margin-bottom:4px; color: var(--text-main); }
+    .tour-tooltip-texto { font-size:13px; color:var(--text-muted); line-height:1.5; }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .001ms !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <div class="topbar">
+    <div class="brand"><span class="brand-chip"></span><span id="brandTexto">MI AGENCIA</span> <span class="conn-dot" id="connDot" title="Conectado"></span></div>
+    <div class="reloj-topbar"><span class="reloj-hora" id="relojHora">--:--</span><span class="reloj-fecha" id="relojFecha">—</span></div>
+    <button class="icon-btn" id="btnCapacitacion" onclick="iniciarTour()" title="Modo capacitación">🎓</button>
+    <a class="icon-btn" style="text-decoration:none; display:inline-flex; align-items:center;" href="<?= ScriptApp.getService().getUrl() ?>?page=Index" title="Ver versión completa (laptop)">💻</a>
+    <button class="icon-btn" id="themeBtn" onclick="toggleTheme()" title="Cambiar tema">☀️</button>
+  </div>
+
+  <div class="container">
+
+    <div class="header-bar" style="margin-bottom:10px;">
+      <span class="header-title">🔍 Auditoría de estantes</span>
+    </div>
+
+    <div class="header-bar" style="margin-bottom:10px; justify-content:space-between;">
+      <span class="header-title">⚡ Modo rápido (marcar sin escanear)</span>
+      <label class="switch-demo">
+        <input type="checkbox" id="modoRapidoInput" onchange="modoRapido = this.checked; renderListaAuditoria();">
+        <span class="switch-demo-slider"></span>
+      </label>
+    </div>
+    <div class="modo-rapido-hint" id="modoRapidoHint">Actívalo para estantes chicos: toca cada paquete de la lista en vez de escanearlo.</div>
+
+    <div class="header-bar" style="margin-bottom:10px;">
+      <span class="header-title">1 · 🗂️ Estante a auditar</span>
+    </div>
+    <div class="resumen-estante-compacto" id="resumenEstanteAuditCompacto">
+      <div class="resumen-estante-info">
+        <span class="estante-nombre" id="resumenEstanteAuditNombre">—</span>
+        <span class="estante-count-badge" id="resumenEstanteAuditConteo">0 paq</span>
+      </div>
+      <button class="btn-cambiar-estante" onclick="mostrarSelectorEstantes()">Cambiar</button>
+    </div>
+    <div class="grid-estantes" id="gridEstantesAuditoria"></div>
+
+    <div class="header-bar" style="margin-bottom:10px;">
+      <span class="header-title">2 · 🔎 Escanea lo que hay físicamente en [<span id="estanteAuditNombreHeader">...</span>]</span>
+      <span class="header-count" id="auditProgresoHeader">0/0</span>
+    </div>
+
+    <div class="scan-container">
+      <input type="text" id="auditInput" class="scan-input" placeholder="Escanea para confirmar" autocomplete="off">
+    </div>
+    <button class="btn-camara" id="btnCamaraAuditoria" onclick="abrirCamara()">📷 Escanear con la cámara</button>
+
+    <div class="card-list" id="listaAuditoriaInteractiva"></div>
+
+    <button class="btn-action" id="btnSincronizarAuditoria" style="width:100%; background:var(--navy); padding:16px; margin-top:16px; font-size:14px; font-weight:900;" onclick="evaluarYConfirmarAuditoria()">🔄 SINCRONIZAR ESTANTE</button>
+  </div>
+
+  <!-- TOUR -->
+  <div class="tour-overlay" id="tourOverlay" style="display:none;">
+    <div class="tour-spotlight" id="tourSpotlight"></div>
+    <div class="tour-tooltip" id="tourTooltip">
+      <div class="tour-tooltip-header">
+        <span id="tourPaso">1/6</span>
+        <button class="tour-skip" onclick="terminarTour()">Saltar ✕</button>
+      </div>
+      <div class="tour-tooltip-titulo" id="tourTitulo"></div>
+      <div class="tour-tooltip-texto" id="tourTexto"></div>
+      <button class="btn-action" id="tourBtnSiguiente" style="width:100%; margin-top:12px;" onclick="siguientePasoTour()">Siguiente →</button>
+    </div>
+  </div>
+
+  <!-- MODAL: CONFIRMACIÓN DE AUDITORÍA -->
+  <div class="modal-overlay" id="modalAuditoriaConfirm">
+    <div class="modal">
+      <h3 style="margin-top:0; color:var(--warning); font-size:17px;">Confirmar sincronización</h3>
+      <div id="msgAuditoriaEvaluacion" style="font-size:13px; color:var(--text-muted); margin-bottom:12px;"></div>
+      <div id="listaFaltantesAudit" style="background:rgba(239,68,68,.1); border:1px solid rgba(239,68,68,.3); padding:10px; border-radius:8px; font-size:12px; color:#fca5a5; margin:10px 0; max-height:150px; overflow-y:auto; font-family: var(--font-code);"></div>
+      <p style="color:var(--text-main); font-size:13px; font-weight:700;">¿Marcar los faltantes como ENTREGADOS?</p>
+      <div style="display:flex; gap:10px; margin-top:14px;">
+        <button class="btn-action" style="flex:1; padding:12px;" onclick="confirmarSalidaAuditoria()">SÍ, MARCAR</button>
+        <button class="btn-action" style="flex:1; background:var(--surface-2); color:var(--text-main); border:1px solid var(--line);" onclick="cerrarModal('modalAuditoriaConfirm')">CANCELAR</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: REUBICAR PAQUETE DESDE AUDITORÍA -->
+  <div class="modal-overlay" id="modalReubicar">
+    <div class="modal">
+      <h3 style="margin-top:0; font-size:17px;">Reubicar paquete <span style="font-family:var(--font-code); color:var(--navy);" id="reubicarUtdHeader"></span></h3>
+      <p style="font-size:12.5px; color:var(--text-muted); margin-top:-6px;">Elige el estante correcto — se mueve al instante.</p>
+      <div class="grid-estantes" id="gridReubicarMovil"></div>
+      <button class="btn-action" style="width:100%; background:var(--surface-2); color:var(--text-main); border:1px solid var(--line); margin-top:8px;" onclick="cerrarModal('modalReubicar')">CANCELAR</button>
+    </div>
+  </div>
+
+  <?!= include('Compartido'); ?>
+  <script>
+    let estantes = [];
+    let estantesOrdenados = [];
+    let digitosUTD = 3;
+    let paquetesBase = [];
+    let conteoEstantes = {};
+
+    let estanteAuditoria = "";
+    let mostrandoSelectorAuditoria = true;
+
+    let escaneadosAuditSet = new Set();
+    let filasFaltantesAuditoria = [];
+    let modoRapido = false;
+    let paqueteReubicando = null;
+
+    // ---------- ESCANEO CON CÁMARA (página externa) ----------
+    let urlEscanerCamara = '';
+    let ventanaCamara = null;
+    let ultimoCodigoLeido = null;
+    let ultimoCodigoTiempo = 0;
+
+    // ---------- TOUR ----------
+    let pasoActualTour = 0;
+    const pasosTour = [
+      { selector: ['#resumenEstanteAuditCompacto', '#gridEstantesAuditoria'], titulo: 'Elige el estante a auditar', texto: 'Toca el estante que vas a revisar físicamente. Si ya tienes uno elegido, aparece aquí compacto — toca "Cambiar" para elegir otro.' },
+      { selector: '#modoRapidoInput', titulo: 'Modo rápido', texto: 'Actívalo si el estante es chico: en vez de escanear, tocas cada paquete de la lista para confirmarlo.' },
+      { selector: '#auditInput', titulo: 'Escanea para confirmar', texto: 'Ve escaneando cada paquete que encuentres físicamente ahí. Si un paquete pertenece a otro estante, te avisará.' },
+      { selector: '#btnCamaraAuditoria', titulo: 'O usa la cámara', texto: 'Si no tienes pistola a la mano, toca aquí para escanear con la cámara del celular.' },
+      { selector: '#listaAuditoriaInteractiva', titulo: 'Reubica sobre la marcha', texto: 'Si un paquete está en el estante equivocado, toca el ícono 🔀 para moverlo al correcto sin salir de la auditoría.' },
+      { selector: '#btnSincronizarAuditoria', titulo: 'Sincroniza al final', texto: 'Cuando termines de escanear todo el estante, este botón marca como entregado lo que ya no esté físicamente ahí.' }
+    ];
+
+    function actualizarReloj() {
+      const ahora = new Date();
+      const horaEl = document.getElementById('relojHora');
+      const fechaEl = document.getElementById('relojFecha');
+      if (horaEl) horaEl.innerText = ahora.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+      if (fechaEl) fechaEl.innerText = ahora.toLocaleDateString('es-MX', { weekday: 'short', day: 'numeric', month: 'short' });
+    }
+
+    function aplicarPersonalizacion() {
+      llamar('obtenerConfigMarca', [], data => {
+        const brand = document.getElementById('brandTexto');
+        if (brand) brand.innerText = data.nombre.toUpperCase();
+        const raiz = document.documentElement.style;
+        raiz.setProperty('--accent', data.colorAcento);
+        raiz.setProperty('--accent-ink', colorContraste(data.colorAcento));
+        raiz.setProperty('--navy', data.colorNavy);
+      });
+    }
+
+    function cargarConfigCamara() {
+      llamar('obtenerConfigCamara', [], data => { urlEscanerCamara = data.url || ''; });
+    }
+
+    window.onload = function() {
+      const savedTheme = localStorage.getItem('theme_preference');
+      if (savedTheme === 'light') {
+        document.body.classList.add('light-theme');
+        document.getElementById('themeBtn').innerText = '🌙';
+      }
+
+      cargarEstantesYDatos();
+      cargarConfigCamara();
+      aplicarPersonalizacion();
+      llamar('obtenerConfigUTD', [], data => { digitosUTD = data.digitos; });
+
+      actualizarReloj();
+      setInterval(actualizarReloj, 1000);
+
+      setInterval(() => { obtenerDatosServidorSilent(); }, 4000);
+
+      document.getElementById('auditInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') { e.preventDefault(); procesarEscaneoAuditoria(this.value); this.value = ''; }
+      });
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
+      });
+
+      if (!localStorage.getItem('capacitacion_completada_movil_v2')) {
+        setTimeout(iniciarTour, 900);
+      }
+    };
+
+    function toggleTheme() {
+      document.body.classList.toggle('light-theme');
+      const isLight = document.body.classList.contains('light-theme');
+      document.getElementById('themeBtn').innerText = isLight ? '🌙' : '☀️';
+      localStorage.setItem('theme_preference', isLight ? 'light' : 'dark');
+    }
+
+    function cargarEstantesYDatos() {
+      llamar('obtenerEstantesConLayout', [], data => {
+        estantes = data.estantes;
+        const layout = (data.layout && data.layout.length > 0) ? data.layout : [estantes];
+        estantesOrdenados = layout.reduce((acc, fila) => acc.concat(fila), []);
+        if (estantes.length > 0 && !estanteAuditoria) {
+          const ultimoUsado = localStorage.getItem('ultimo_estante_auditoria');
+          estanteAuditoria = (ultimoUsado && estantes.includes(ultimoUsado)) ? ultimoUsado : estantes[0];
+          mostrandoSelectorAuditoria = !ultimoUsado;
+        }
+        obtenerDatosServidor();
+      });
+    }
+
+    function obtenerDatosServidor() {
+      llamar('obtenerPaquetesYMetricas', [], res => {
+        paquetesBase = res.paquetes;
+        conteoEstantes = res.conteoEstantes;
+        renderSemaforoEstantes();
+        inicializarVistaAuditoria();
+      });
+    }
+
+    function obtenerDatosServidorSilent() {
+      llamar('obtenerPaquetesYMetricas', [], res => {
+        if (JSON.stringify(res.paquetes) !== JSON.stringify(paquetesBase)) {
+          paquetesBase = res.paquetes;
+          conteoEstantes = res.conteoEstantes;
+          renderSemaforoEstantes();
+          renderListaAuditoria();
+        }
+      });
+    }
+
+    function mostrarSelectorEstantes() {
+      mostrandoSelectorAuditoria = true;
+      renderSemaforoEstantes();
+    }
+
+    function calcularSemaforo(cant) {
+      if (cant >= 10) return { clase: 'sem-rojo', texto: 'Lleno' };
+      if (cant >= 6) return { clase: 'sem-amarillo', texto: 'Revisar' };
+      return { clase: 'sem-verde', texto: 'Libre' };
+    }
+
+    function renderSemaforoEstantes() {
+      const contAudit = document.getElementById('gridEstantesAuditoria');
+      const resumenAudit = document.getElementById('resumenEstanteAuditCompacto');
+      contAudit.innerHTML = '';
+
+      if (estantes.length === 0) {
+        contAudit.innerHTML = `<div class="empty-state" style="grid-column:1/-1;"><div class="glyph">📍</div><div class="title">No hay estantes configurados</div><div class="sub">Créalos desde la versión de laptop (⚙️ Ajustes).</div></div>`;
+        resumenAudit.classList.remove('show');
+        return;
+      }
+
+      const mostrarGrid = mostrandoSelectorAuditoria || !estanteAuditoria;
+      contAudit.style.display = mostrarGrid ? 'grid' : 'none';
+      if (!mostrarGrid) {
+        const cant = conteoEstantes[estanteAuditoria] || 0;
+        const sem = calcularSemaforo(cant);
+        resumenAudit.className = `resumen-estante-compacto show ${sem.clase}`;
+        document.getElementById('resumenEstanteAuditNombre').innerText = estanteAuditoria;
+        document.getElementById('resumenEstanteAuditConteo').innerText = `${cant} paq · ${sem.texto}`;
+      } else {
+        resumenAudit.classList.remove('show');
+      }
+
+      if (!mostrarGrid) return;
+
+      (estantesOrdenados.length ? estantesOrdenados : estantes).forEach(e => {
+        const key = String(e).trim();
+        const cant = conteoEstantes[key] || 0;
+        const sem = calcularSemaforo(cant);
+        const btnA = document.createElement('div');
+        btnA.className = `estante-card ${sem.clase} ${key === estanteAuditoria ? 'selected' : ''}`;
+        btnA.innerHTML = `<div><span class="estante-nombre">${escapeHtml(key)}</span><div class="estante-status">${sem.texto}</div></div><span class="estante-count-badge">${cant} paq</span>`;
+        btnA.onclick = () => {
+          estanteAuditoria = key;
+          localStorage.setItem('ultimo_estante_auditoria', key);
+          escaneadosAuditSet.clear();
+          mostrandoSelectorAuditoria = false;
+          renderSemaforoEstantes();
+          inicializarVistaAuditoria();
+        };
+        contAudit.appendChild(btnA);
+      });
+    }
+
+    function inicializarVistaAuditoria() {
+      document.getElementById('estanteAuditNombreHeader').innerText = estanteAuditoria || '—';
+      renderListaAuditoria();
+      setTimeout(() => document.getElementById('auditInput').focus(), 100);
+    }
+
+    function renderListaAuditoria() {
+      const registradosEnEstante = paquetesBase.filter(p => p.ubicacion === estanteAuditoria);
+      const confirmados = registradosEnEstante.filter(p => escaneadosAuditSet.has(p.utd) || escaneadosAuditSet.has(p.guia)).length;
+      document.getElementById('auditProgresoHeader').innerText = `${confirmados}/${registradosEnEstante.length}`;
+
+      const cont = document.getElementById('listaAuditoriaInteractiva');
+      cont.innerHTML = '';
+
+      if (registradosEnEstante.length === 0) {
+        cont.innerHTML = `<div class="empty-state"><div class="glyph">📭</div><div class="title">Estante vacío</div><div class="sub">${escapeHtml(estanteAuditoria)} no tiene paquetes registrados en el sistema.</div></div>`;
+        return;
+      }
+
+      registradosEnEstante.forEach(p => {
+        const esConfirmado = escaneadosAuditSet.has(p.utd) || escaneadosAuditSet.has(p.guia);
+        const item = document.createElement('div');
+        item.className = `card-item ${esConfirmado ? 'audit-ok' : 'audit-missing'} ${modoRapido ? 'modo-rapido-tocable' : ''}`;
+        item.innerHTML = `
+          <div class="item-info" onclick="confirmarManualPorFila(${p.numFila})">
+            <span class="utd-tag">${p.utd}</span>
+            <div class="item-text">
+              <div class="item-name">${nombreMostrar(p.nombre)}</div>
+              <div class="item-sub">Guía ${p.guia}</div>
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; gap:6px;">
+            <button class="btn-move" title="Reubicar" onclick="event.stopPropagation(); abrirReubicar(${p.numFila})">🔀</button>
+            ${esConfirmado
+                ? '<span style="color:var(--green); font-weight:800; font-size:11.5px; background:rgba(0,166,80,.15); padding:4px 10px; border-radius:12px;">✓</span>'
+                : '<span style="color:var(--red); font-weight:800; font-size:11.5px; background:rgba(239,68,68,.15); padding:4px 10px; border-radius:12px;">•</span>'}
+          </div>`;
+        cont.appendChild(item);
+      });
+    }
+
+    function confirmarManualPorFila(numFila) {
+      if (!modoRapido) return;
+      const p = paquetesBase.find(x => x.numFila === numFila);
+      if (!p) return;
+      const yaConfirmado = escaneadosAuditSet.has(p.utd) || (p.guia && escaneadosAuditSet.has(p.guia));
+      if (yaConfirmado) {
+        escaneadosAuditSet.delete(p.utd);
+        if (p.guia) escaneadosAuditSet.delete(p.guia);
+      } else {
+        escaneadosAuditSet.add(p.utd);
+        if (p.guia) escaneadosAuditSet.add(p.guia);
+      }
+      vibrar(30);
+      renderListaAuditoria();
+    }
+
+    function procesarEscaneoAuditoria(codigo) {
+      const res = extraerLocal(codigo);
+      if (!res.utd) { showToast('⚠️ Código no reconocido', 'error'); return false; }
+
+      const paqueteEncontrado = paquetesBase.find(p => p.utd === res.utd || (res.guia && p.guia === res.guia));
+      if (paqueteEncontrado && paqueteEncontrado.ubicacion !== estanteAuditoria) {
+        showToast(`❌ ¡Error! Este paquete pertenece a ${escapeHtml(paqueteEncontrado.ubicacion)}, acomódalo allá.`, 'error');
+        vibrar([40, 60, 40, 60, 40]);
+        return false;
+      }
+
+      const yaConfirmado = escaneadosAuditSet.has(res.utd) || (res.guia && escaneadosAuditSet.has(res.guia));
+
+      escaneadosAuditSet.add(res.utd);
+      if (res.guia) escaneadosAuditSet.add(res.guia);
+      vibrar(35);
+      renderListaAuditoria();
+      document.getElementById('auditInput').focus();
+      return !yaConfirmado;
+    }
+
+    // ---------- REUBICAR DESDE AUDITORÍA ----------
+    function abrirReubicar(numFila) {
+      paqueteReubicando = paquetesBase.find(p => p.numFila === numFila);
+      if (!paqueteReubicando) return;
+      document.getElementById('reubicarUtdHeader').innerText = paqueteReubicando.utd;
+
+      const cont = document.getElementById('gridReubicarMovil');
+      cont.innerHTML = '';
+      (estantesOrdenados.length ? estantesOrdenados : estantes).forEach(nombre => {
+        if (nombre === paqueteReubicando.ubicacion) return;
+        const btn = document.createElement('div');
+        btn.className = 'estante-card';
+        btn.innerHTML = `<span class="estante-nombre">${escapeHtml(nombre)}</span>`;
+        btn.onclick = () => confirmarReubicacion(nombre);
+        cont.appendChild(btn);
+      });
+      document.getElementById('modalReubicar').style.display = 'flex';
+    }
+
+    function confirmarReubicacion(nuevoEstante) {
+      if (!paqueteReubicando) return;
+      const numFila = paqueteReubicando.numFila;
+      llamar('editarPaqueteCompleto', [numFila, undefined, nuevoEstante, undefined], () => {
+        cerrarModal('modalReubicar');
+        showToast(`✅ Reubicado a ${nuevoEstante}`, 'success');
+        escaneadosAuditSet.delete(paqueteReubicando.utd);
+        if (paqueteReubicando.guia) escaneadosAuditSet.delete(paqueteReubicando.guia);
+        paqueteReubicando = null;
+        cargarEstantesYDatos();
+      });
+    }
+
+    // ---------- ESCANEO CON CÁMARA ----------
+    function abrirCamara() {
+      if (!urlEscanerCamara) {
+        showToast('⚠️ Todavía no está configurado el escáner de cámara. Pídele al administrador que lo configure en Ajustes (desde la laptop).', 'error');
+        return;
+      }
+      ultimoCodigoLeido = null;
+      ventanaCamara = window.open(urlEscanerCamara, 'escanerCamara', 'width=420,height=680');
+      if (!ventanaCamara) {
+        showToast('⚠️ El navegador bloqueó la ventana emergente. Permite ventanas emergentes para este sitio e intenta de nuevo.', 'error');
+      }
+    }
+
+    window.addEventListener('message', function(event) {
+      const datos = event.data;
+      if (!datos || datos.tipo !== 'codigo_escaneado' || !datos.valor) return;
+
+      const texto = String(datos.valor);
+      const ahora = Date.now();
+      if (texto === ultimoCodigoLeido && (ahora - ultimoCodigoTiempo) < 1800) return;
+      ultimoCodigoLeido = texto;
+      ultimoCodigoTiempo = ahora;
+      vibrar(50);
+
+      const agregado = procesarEscaneoAuditoria(texto);
+      if (event.source) {
+        event.source.postMessage({ tipo: 'resultado_escaneo', exito: !!agregado }, '*');
+      }
+    });
+
+    // ---------- TOUR ----------
+    function primerVisible(selectores) {
+      const lista = Array.isArray(selectores) ? selectores : [selectores];
+      for (const sel of lista) {
+        const el = document.querySelector(sel);
+        if (el && el.offsetParent !== null) return el;
+      }
+      return null;
+    }
+
+    function iniciarTour() {
+      pasoActualTour = 0;
+      document.getElementById('tourOverlay').style.display = 'block';
+      mostrarPasoTour();
+    }
+
+    function mostrarPasoTour() {
+      const paso = pasosTour[pasoActualTour];
+      if (!paso) { terminarTour(); return; }
+
+      setTimeout(() => {
+        const el = primerVisible(paso.selector);
+        if (!el) { pasoActualTour++; mostrarPasoTour(); return; }
+        posicionarTour(el);
+        document.getElementById('tourPaso').innerText = `${pasoActualTour + 1}/${pasosTour.length}`;
+        document.getElementById('tourTitulo').innerText = paso.titulo;
+        document.getElementById('tourTexto').innerText = paso.texto;
+        document.getElementById('tourBtnSiguiente').innerText = pasoActualTour === pasosTour.length - 1 ? '¡Listo! 🎉' : 'Siguiente →';
+      }, 150);
+    }
+
+    function posicionarTour(el) {
+      const rect = el.getBoundingClientRect();
+      const pad = 8;
+      const spot = document.getElementById('tourSpotlight');
+      spot.style.top = (rect.top - pad) + 'px';
+      spot.style.left = (rect.left - pad) + 'px';
+      spot.style.width = (rect.width + pad * 2) + 'px';
+      spot.style.height = (rect.height + pad * 2) + 'px';
+
+      const tooltip = document.getElementById('tourTooltip');
+      const espacioAbajo = window.innerHeight - rect.bottom;
+      tooltip.style.top = espacioAbajo > 190
+        ? (rect.bottom + 16) + 'px'
+        : Math.max(16, rect.top - 190) + 'px';
+      const anchoTooltip = Math.min(300, window.innerWidth - 32);
+      tooltip.style.left = Math.max(16, Math.min(rect.left, window.innerWidth - anchoTooltip - 16)) + 'px';
+    }
+
+    function siguientePasoTour() {
+      pasoActualTour++;
+      mostrarPasoTour();
+    }
+
+    function terminarTour() {
+      document.getElementById('tourOverlay').style.display = 'none';
+      localStorage.setItem('capacitacion_completada_movil_v2', '1');
+    }
+
+    function evaluarYConfirmarAuditoria() {
+      const registradosEnEstante = paquetesBase.filter(p => p.ubicacion === estanteAuditoria);
+      if (registradosEnEstante.length === 0) { showToast('⚠️ Este estante no tiene paquetes para auditar', 'error'); return; }
+
+      const faltantes = registradosEnEstante.filter(p => !escaneadosAuditSet.has(p.utd) && !escaneadosAuditSet.has(p.guia));
+      const confirmados = registradosEnEstante.length - faltantes.length;
+
+      if (faltantes.length > 0) {
+        filasFaltantesAuditoria = faltantes.map(f => f.numFila);
+        document.getElementById('msgAuditoriaEvaluacion').innerText = `Se escanearon ${confirmados} de ${registradosEnEstante.length}. Quedaron ${faltantes.length} sin encontrar:`;
+        document.getElementById('listaFaltantesAudit').innerHTML = faltantes.map(f => `• UTD ${f.utd} (${escapeHtml(f.nombre) || 'CLIENTE'})`).join('<br>');
+        document.getElementById('modalAuditoriaConfirm').style.display = 'flex';
+      } else {
+        showToast(`✅ Auditoría limpia en ${estanteAuditoria}. Todo confirmado.`, 'success');
+        escaneadosAuditSet.clear();
+        renderListaAuditoria();
+      }
+    }
+
+    function confirmarSalidaAuditoria() {
+      if (filasFaltantesAuditoria.length === 0) { cerrarModal('modalAuditoriaConfirm'); return; }
+      llamar('marcarEntregados', [filasFaltantesAuditoria], () => {
+        cerrarModal('modalAuditoriaConfirm');
+        showToast(`✅ ${filasFaltantesAuditoria.length} paquete(s) marcados como entregados`, 'success');
+        escaneadosAuditSet.clear();
+        filasFaltantesAuditoria = [];
+        cargarEstantesYDatos();
+      });
+    }
+
+    function extraerLocal(codigoBruto) {
+      if (!codigoBruto) return { guia: "", utd: "" };
+      let strOriginal = String(codigoBruto).trim();
+      let guiaFinal = "";
+
+      if (strOriginal.includes('"id":') || (strOriginal.startsWith('{') && strOriginal.endsWith('}'))) {
+        try {
+          let parsed = JSON.parse(strOriginal);
+          guiaFinal = parsed && parsed.id ? String(parsed.id).replace(/\D/g, '') : strOriginal.replace(/\D/g, '');
+        } catch(e) { guiaFinal = strOriginal.replace(/\D/g, ''); }
+      } else {
+        guiaFinal = strOriginal.replace(/\D/g, '');
+      }
+
+      if (!guiaFinal) return { guia: "", utd: "" };
+      if (guiaFinal.length > 11) guiaFinal = guiaFinal.slice(-11);
+      const utd = guiaFinal.length >= digitosUTD ? guiaFinal.slice(-digitosUTD) : guiaFinal.padStart(digitosUTD, '0');
+      return { guia: guiaFinal, utd: utd };
+    }
+
+    function escapeHtml(str) {
+      if (str === undefined || str === null) return '';
+      return String(str).replace(/[&<>"']/g, m => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
+    }
+
+    function nombreMostrar(nombre) {
+      const limpio = (nombre || '').trim();
+      return limpio ? escapeHtml(limpio) : '<span class="sin-nombre">sin nombre</span>';
+    }
+
+    function cerrarModal(id) {
+      document.getElementById(id).style.display = 'none';
+    }
+  </script>
+</body>
+</html>
