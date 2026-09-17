@@ -1043,6 +1043,17 @@
       document.getElementById('buscarInput').addEventListener('keypress', function(e) {
         if (e.key === 'Enter') { e.preventDefault(); clearTimeout(buscarDebounceTimer); llamar('buscarPaquetePorCodigo', [this.value.trim()], data => renderResultadosBuscar(data, this.value.trim())); }
       });
+      // La pistola lectora manda Enter en cuanto termina de escanear — si ese
+      // escaneo ya dejó una sola coincidencia exacta, no tiene sentido hacerlo
+      // esperar los 3.5s del timer de respaldo: el Enter ES la señal de "ya
+      // terminé de escanear, pregúntame si lo entrego" y la respondemos al instante.
+      document.getElementById('searchInput').addEventListener('keypress', function(e) {
+        if (e.key !== 'Enter') return;
+        e.preventDefault();
+        if (!paquetePendientePregunta) return;
+        if (timerEntregaAuto) { clearTimeout(timerEntregaAuto); timerEntregaAuto = null; }
+        mostrarModalPreguntaEntrega();
+      });
       document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
           document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
@@ -2577,16 +2588,11 @@
 
       if (q.length >= 2 && filtrados.length === 1 && !busquedaAproximada && !(filtrados[0].utd === utdRechazadoTemporalmente && Date.now() < rechazoHasta)) {
         paquetePendientePregunta = filtrados[0];
-        timerEntregaAuto = setTimeout(() => {
-          if (document.getElementById('home').classList.contains('active') && paquetePendientePregunta) {
-            document.getElementById('pregUtdHeader').innerText = paquetePendientePregunta.utd;
-            document.getElementById('pregNombreHeader').innerHTML = nombreMostrar(paquetePendientePregunta.nombre);
-            const badgeUb = document.getElementById('pregUbicacionBadge');
-            badgeUb.className = `ub-badge ${obtenerClaseUbicacionBadge(paquetePendientePregunta.ubicacion)}`;
-            document.getElementById('pregUbicacionTexto').innerText = paquetePendientePregunta.ubicacion;
-            document.getElementById('modalPreguntaEntrega').style.display = 'flex';
-          }
-        }, 3500);
+        // Si el operador llegó aquí escaneando (la pistola manda Enter al
+        // terminar), el listener de Enter en searchInput ya habrá mostrado el
+        // modal antes de que este timer llegue a cumplirse — este timeout
+        // sigue existiendo como respaldo para quien escribe a mano sin Enter.
+        timerEntregaAuto = setTimeout(mostrarModalPreguntaEntrega, 3500);
       }
 
       if (q.length >= 2 && filtrados.length > 1 && !busquedaAproximada) {
@@ -2634,6 +2640,19 @@
           </div>`;
         cont.appendChild(item);
       });
+    }
+
+    // Pinta y abre el modal "¿ya entregaste?" para paquetePendientePregunta —
+    // la llama tanto el timer de respaldo (3.5s) como el Enter inmediato del
+    // escáner en el buscador del Mostrador (ver el addEventListener de searchInput).
+    function mostrarModalPreguntaEntrega() {
+      if (!document.getElementById('home').classList.contains('active') || !paquetePendientePregunta) return;
+      document.getElementById('pregUtdHeader').innerText = paquetePendientePregunta.utd;
+      document.getElementById('pregNombreHeader').innerHTML = nombreMostrar(paquetePendientePregunta.nombre);
+      const badgeUb = document.getElementById('pregUbicacionBadge');
+      badgeUb.className = `ub-badge ${obtenerClaseUbicacionBadge(paquetePendientePregunta.ubicacion)}`;
+      document.getElementById('pregUbicacionTexto').innerText = paquetePendientePregunta.ubicacion;
+      document.getElementById('modalPreguntaEntrega').style.display = 'flex';
     }
 
     function confirmarEntregaDesdeModal() {

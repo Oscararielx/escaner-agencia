@@ -6,7 +6,7 @@
  * de esto, se cambia en un solo lugar y toda la app lo respeta.
  */
 
-const VERSION_APP = '3.0.0';
+const VERSION_APP = '3.1.0';
 
 // ---------- Estructura de la hoja de cálculo ----------
 const HOJA_PAQUETES = "PAQUETES";
