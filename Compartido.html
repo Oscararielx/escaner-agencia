@@ -97,6 +97,70 @@
   // Vibración táctil (solo hace algo en celulares con soporte; en laptop no truena, simplemente no vibra).
   function vibrar(ms) { if (navigator.vibrate) { try { navigator.vibrate(ms); } catch (e) {} } }
 
+  // ---------- SONIDO ----------
+  // Beep corto generado con Web Audio API — nada de archivos de audio ni
+  // <audio src="...">, así que no depende de que cargue algo por red ni de
+  // que el navegador permita autoplay de un archivo. Apps Script (el
+  // backend) NUNCA participa en esto: el sonido es puramente del navegador,
+  // por eso no hay forma de que "congele" la app ni una llamada al servidor.
+  //
+  // Un solo AudioContext se crea la primera vez que hace falta y se
+  // reutiliza siempre — crear uno nuevo por cada beep es lo que en algunos
+  // navegadores acumula advertencias/lentitud con el tiempo.
+  let audioCtxCompartido = null;
+  function obtenerAudioCtx_() {
+    if (audioCtxCompartido) return audioCtxCompartido;
+    try {
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      audioCtxCompartido = Ctx ? new Ctx() : null;
+    } catch (e) {
+      audioCtxCompartido = null;
+    }
+    return audioCtxCompartido;
+  }
+
+  // Los navegadores exigen un gesto real del usuario (clic, tecla) antes de
+  // dejar sonar cualquier audio — el primer clic o tecla de la sesión
+  // "despierta" el AudioContext para que el primer beep real no se pierda.
+  function activarAudioConGesto_() {
+    const ctx = obtenerAudioCtx_();
+    if (ctx && ctx.state === 'suspended') ctx.resume().catch(() => {});
+  }
+  document.addEventListener('pointerdown', activarAudioConGesto_, { once: true });
+  document.addEventListener('keydown', activarAudioConGesto_, { once: true });
+
+  // sonar('exito') → beep agudo corto (entrega confirmada).
+  // sonar('error')  → beep grave corto (escaneo no encontrado / rechazado).
+  // Si el navegador no soporta Web Audio o lo bloquea, simplemente no suena
+  // — nunca debe interrumpir el flujo real de escanear/entregar.
+  function sonar(tipo) {
+    try {
+      const ctx = obtenerAudioCtx_();
+      if (!ctx) return;
+      if (ctx.state === 'suspended') ctx.resume().catch(() => {});
+
+      const ahora = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.type = 'sine';
+      osc.frequency.value = tipo === 'error' ? 220 : 880;
+
+      // Envolvente rápida (ataque + caída) para que suene como "beep" y no
+      // como un tono que se corta feo al terminar.
+      gain.gain.setValueAtTime(0, ahora);
+      gain.gain.linearRampToValueAtTime(0.18, ahora + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, ahora + 0.14);
+
+      osc.start(ahora);
+      osc.stop(ahora + 0.15);
+    } catch (e) {
+      // Un problema de audio nunca debe tronar la app.
+    }
+  }
+
   // Negro o blanco según qué tanto contraste dé sobre un color de acento — para que el texto siempre se lea.
   function colorContraste(hex) {
     const r = parseInt(hex.substr(1, 2), 16), g = parseInt(hex.substr(3, 2), 16), b = parseInt(hex.substr(5, 2), 16);
